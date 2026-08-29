@@ -4,10 +4,17 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>contigocare_admin_frontend</title>
+    <!-- Do not leak in-app paths (which contain session ids) to third parties. -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="color-scheme" content="light" />
+    <meta name="description" content="ContigoCare admin console" />
+    <!-- An internal console has no business being indexed or framed. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <title>ContigoCare Admin</title>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>This application requires JavaScript to run.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

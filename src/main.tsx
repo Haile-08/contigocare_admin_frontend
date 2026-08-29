@@ -1,9 +1,17 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
 
-createRoot(document.getElementById('root')!).render(
+import { App } from '@/app/App'
+
+import './index.css'
+
+const container = document.getElementById('root')
+
+if (!container) {
+  throw new Error('Missing #root element — check index.html')
+}
+
+createRoot(container).render(
   <StrictMode>
     <App />
   </StrictMode>,
