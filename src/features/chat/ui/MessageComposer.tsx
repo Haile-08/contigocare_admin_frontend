@@ -1,6 +1,7 @@
 import type { FormEvent, KeyboardEvent } from 'react'
 
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
+import { useTranslation } from '@/shared/i18n'
 import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/ui/Button'
 
@@ -15,6 +16,7 @@ export interface MessageComposerProps {
 
 export function MessageComposer({ sessionId, isSending, onSend }: MessageComposerProps) {
   const dispatch = useAppDispatch()
+  const { t, fmt } = useTranslation()
   const draft = useAppSelector((state) => selectDraft(state, sessionId))
 
   const trimmed = draft.trim()
@@ -44,12 +46,12 @@ export function MessageComposer({ sessionId, isSending, onSend }: MessageCompose
   return (
     <form
       onSubmit={handleSubmit}
-      className="border-t border-slate-200 bg-white px-4 py-3"
+      className="shrink-0 border-t border-line bg-surface px-4 py-3"
     >
       <div className="mx-auto flex max-w-3xl items-end gap-2">
         <div className="flex-1">
           <label htmlFor="composer" className="sr-only">
-            Message
+            {t('chat.messageLabel')}
           </label>
           <textarea
             id="composer"
@@ -59,27 +61,27 @@ export function MessageComposer({ sessionId, isSending, onSend }: MessageCompose
               dispatch(draftChanged({ sessionId, text: event.target.value }))
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Send a message…"
+            placeholder={t('chat.placeholder')}
             aria-invalid={isTooLong || undefined}
             aria-describedby={isTooLong ? 'composer-limit' : undefined}
             className={cn(
-              'w-full resize-none rounded-lg border px-3 py-2 text-sm text-slate-900',
-              'placeholder:text-slate-400 focus:outline-2 focus:outline-offset-0',
-              isTooLong
-                ? 'border-red-400 focus:outline-red-500'
-                : 'border-slate-300 focus:outline-brand-500',
+              'w-full resize-none rounded-xs border bg-surface px-3 py-2 text-[12.5px] text-body',
+              'placeholder:text-faint transition-colors',
+              isTooLong ? 'border-critical' : 'border-line-soft hover:border-line-strong',
             )}
           />
           {isTooLong ? (
-            <p id="composer-limit" className="mt-1 text-xs text-red-600">
-              {draft.length.toLocaleString()} / {MAX_MESSAGE_LENGTH.toLocaleString()} characters —
-              shorten the message to send it.
+            <p id="composer-limit" className="mt-1 text-[11.5px] text-critical">
+              {t('chat.tooLong', {
+                current: fmt.number(draft.length),
+                max: fmt.number(MAX_MESSAGE_LENGTH),
+              })}
             </p>
           ) : null}
         </div>
 
         <Button type="submit" disabled={!canSend} isLoading={isSending} className="mb-0.5">
-          Send
+          {t('chat.send')}
         </Button>
       </div>
     </form>

@@ -1,18 +1,12 @@
-type ClassValue = string | number | null | undefined | false | ClassValue[]
+import { clsx, type ClassValue } from 'clsx'
+import { twMerge } from 'tailwind-merge'
 
-/** Joins conditional class names. Kept dependency-free on purpose. */
-export function cn(...values: ClassValue[]): string {
-  const out: string[] = []
-
-  for (const value of values) {
-    if (!value && value !== 0) continue
-    if (Array.isArray(value)) {
-      const nested = cn(...value)
-      if (nested) out.push(nested)
-    } else {
-      out.push(String(value))
-    }
-  }
-
-  return out.join(' ')
+/**
+ * Merge conditional class names, letting later Tailwind utilities win over
+ * earlier ones of the same kind. This is what makes every UI primitive
+ * overridable from the call site via `className`: `<Button className="w-full">`
+ * replaces the variant's width instead of fighting it on specificity.
+ */
+export function cn(...inputs: ClassValue[]): string {
+  return twMerge(clsx(inputs))
 }

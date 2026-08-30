@@ -1,25 +1,29 @@
 import { Link } from 'react-router-dom'
 
+import { AuthHeading } from '@/app/layouts/AuthLayout'
 import { paths } from '@/app/router/paths'
 import { RegisterForm } from '@/features/auth/ui/RegisterForm'
+import { useTranslation } from '@/shared/i18n'
 
 export function RegisterPage() {
+  const { t } = useTranslation()
+
   return (
-    <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="text-lg font-semibold text-slate-900">Create your account</h1>
-        <p className="mt-1 text-sm text-slate-500">It takes a moment.</p>
-      </div>
+    <>
+      <AuthHeading title={t('register.title')}>{t('register.subtitle')}</AuthHeading>
 
       <RegisterForm />
 
-      <p className="text-center text-sm text-slate-500">
-        Already have an account?{' '}
-        <Link to={paths.login} className="font-medium text-brand-700 hover:underline">
-          Sign in
+      <p className="text-[13px] text-muted">
+        {t('register.haveAccount')}{' '}
+        <Link
+          to={paths.login}
+          className="border-b border-line-strong font-medium text-body transition-colors hover:border-ink hover:text-ink"
+        >
+          {t('register.signIn')}
         </Link>
       </p>
-    </div>
+    </>
   )
 }
 

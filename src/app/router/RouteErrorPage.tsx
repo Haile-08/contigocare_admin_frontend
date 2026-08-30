@@ -1,5 +1,6 @@
 import { isRouteErrorResponse, useRouteError } from 'react-router-dom'
 
+import { useTranslation } from '@/shared/i18n'
 import { logger } from '@/shared/lib/logger'
 import { Button } from '@/shared/ui/Button'
 
@@ -10,18 +11,23 @@ import { Button } from '@/shared/ui/Button'
  */
 export function RouteErrorPage() {
   const error = useRouteError()
+  const { t } = useTranslation()
 
   logger.error('route error', {
     detail: isRouteErrorResponse(error) ? `${error.status} ${error.statusText}` : String(error),
   })
 
-  const title = isRouteErrorResponse(error) ? `${error.status} — ${error.statusText}` : 'Something went wrong'
+  // A router status line ("404 — Not Found") is the browser's own wording; only
+  // our fallback title is ours to translate.
+  const title = isRouteErrorResponse(error)
+    ? `${error.status} — ${error.statusText}`
+    : t('error.boundaryTitle')
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center">
-      <h1 className="text-lg font-semibold text-slate-900">{title}</h1>
-      <p className="max-w-sm text-sm text-slate-500">
-        This page could not be loaded. Reloading usually fixes it.
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-surface px-6 text-center">
+      <h1 className="text-[17px] font-medium tracking-[-0.015em] text-body">{title}</h1>
+      <p className="max-w-sm text-[12.5px] leading-relaxed text-muted">
+        {t('error.routeBody')}
       </p>
       <Button
         variant="secondary"
@@ -29,7 +35,7 @@ export function RouteErrorPage() {
           globalThis.location.reload()
         }}
       >
-        Reload
+        {t('common.reload')}
       </Button>
     </main>
   )

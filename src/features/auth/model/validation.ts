@@ -1,38 +1,49 @@
 import { z } from 'zod'
 
+import type { TFunction } from '@/shared/i18n'
+
 /**
  * Mirrors the backend's password policy (`app/schemas/auth.py`).
  *
  * Client-side checks are for feedback only — the server enforces the real
  * rule. Keeping the two in sync means a user learns about a weak password
  * before a round trip, not after.
+ *
+ * The schemas are *built from* a `t` rather than declared at module load: a
+ * validation message is UI text, and a schema frozen at import time would
+ * answer in whatever language the app started in. Each form builds its schema
+ * once per locale (`useMemo`), so switching language re-labels the errors too.
  */
-export const passwordSchema = z
-  .string()
-  .min(8, 'Use at least 8 characters')
-  .max(64, 'Use at most 64 characters')
-  .refine((value) => /[A-Z]/.test(value), 'Add an uppercase letter')
-  .refine((value) => /[a-z]/.test(value), 'Add a lowercase letter')
-  .refine((value) => /\d/.test(value), 'Add a number')
-  .refine(
-    (value) => /[!@#$%^&*(),.?":{}|<>]/.test(value),
-    'Add a special character (for example !, ? or @)',
-  )
 
-export const loginSchema = z.object({
-  email: z.email('Enter a valid email address'),
-  password: z.string().min(1, 'Enter your password'),
-})
-
-export const registerSchema = z.object({
-  email: z.email('Enter a valid email address'),
-  password: passwordSchema,
-  username: z
+export function createPasswordSchema(t: TFunction) {
+  return z
     .string()
-    .max(50, 'Use at most 50 characters')
-    .optional()
-    .transform((value) => (value?.trim() ? value.trim() : undefined)),
-})
+    .min(8, t('validation.passwordMin'))
+    .max(64, t('validation.passwordMax'))
+    .refine((value) => /[A-Z]/.test(value), t('validation.passwordUppercase'))
+    .refine((value) => /[a-z]/.test(value), t('validation.passwordLowercase'))
+    .refine((value) => /\d/.test(value), t('validation.passwordNumber'))
+    .refine(
+      (value) => /[!@#$%^&*(),.?":{}|<>]/.test(value),
+      t('validation.passwordSpecial'),
+    )
+}
 
-export const PASSWORD_HINT =
-  '8+ characters with an uppercase letter, a lowercase letter, a number and a special character.'
+export function createLoginSchema(t: TFunction) {
+  return z.object({
+    email: z.email(t('validation.email')),
+    password: z.string().min(1, t('validation.passwordRequired')),
+  })
+}
+
+export function createRegisterSchema(t: TFunction) {
+  return z.object({
+    email: z.email(t('validation.email')),
+    password: createPasswordSchema(t),
+    username: z
+      .string()
+      .max(50, t('validation.nameMax'))
+      .optional()
+      .transform((value) => (value?.trim() ? value.trim() : undefined)),
+  })
+}

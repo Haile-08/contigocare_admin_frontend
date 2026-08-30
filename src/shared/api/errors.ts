@@ -1,17 +1,33 @@
 import type { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import type { SerializedError } from '@reduxjs/toolkit'
 
+import { en } from '@/shared/i18n/en'
+import type { TranslationKey } from '@/shared/i18n/en'
+import type { TFunction } from '@/shared/i18n/translate'
+
 /**
  * Normalises everything RTK Query can hand back — transport failures, FastAPI
  * `{detail: ...}` bodies, Pydantic validation arrays, thrown exceptions — into
  * one shape components can render without type-narrowing at each call site.
+ *
+ * Two kinds of message come out of here, and only one of them is translatable:
+ *
+ *  - Ours — "could not reach the server", "too many attempts". These carry a
+ *    `messageKey`, and a component with a `t` renders them in the user's
+ *    language.
+ *  - The server's — a FastAPI `detail`, a Pydantic field message. We did not
+ *    write that string and cannot translate it, so it passes through verbatim
+ *    with no key. Showing the API's own words is still better than replacing a
+ *    specific explanation ("Incorrect email or password") with a generic one.
  */
 
 export interface NormalizedApiError {
   /** HTTP status, or an RTK Query transport code such as `FETCH_ERROR`. */
   status: number | string
-  /** Human-readable message safe to show to the user. */
+  /** Human-readable message safe to show to the user. English when it is ours. */
   message: string
+  /** Set when the message is ours, so it can be translated. Absent for server text. */
+  messageKey?: TranslationKey
   /** Field-level messages keyed by field name, from 422 validation responses. */
   fieldErrors?: Record<string, string>
 }
@@ -21,22 +37,35 @@ interface FastApiValidationIssue {
   msg?: string
 }
 
-const GENERIC_MESSAGE = 'Something went wrong. Please try again.'
+const GENERIC_KEY = 'error.generic' satisfies TranslationKey
 
-const TRANSPORT_MESSAGES: Record<string, string> = {
-  FETCH_ERROR: 'Could not reach the server. Check your connection and try again.',
-  TIMEOUT_ERROR: 'The server took too long to respond. Please try again.',
-  PARSING_ERROR: 'The server returned an unexpected response.',
-  CUSTOM_ERROR: GENERIC_MESSAGE,
+const TRANSPORT_KEYS: Record<string, TranslationKey> = {
+  FETCH_ERROR: 'error.fetch',
+  TIMEOUT_ERROR: 'error.timeout',
+  PARSING_ERROR: 'error.parsing',
+  CUSTOM_ERROR: GENERIC_KEY,
 }
 
-const STATUS_MESSAGES: Record<number, string> = {
-  400: 'The request was rejected. Please check the details and try again.',
-  401: 'Your session has expired. Please sign in again.',
-  403: 'You do not have permission to do that.',
-  404: 'We could not find what you were looking for.',
-  409: 'That conflicts with something that already exists.',
-  429: 'Too many attempts. Please wait a moment and try again.',
+const STATUS_KEYS: Record<number, TranslationKey> = {
+  400: 'error.badRequest',
+  401: 'error.unauthorized',
+  403: 'error.forbidden',
+  404: 'error.notFound',
+  409: 'error.conflict',
+  429: 'error.tooMany',
+}
+
+/**
+ * The English text for one of our keys. Read straight off the `en` dictionary
+ * so there is one copy of every sentence — this module holds keys, not prose.
+ */
+function fallback(key: TranslationKey): string {
+  const phrase = en[key]
+  return typeof phrase === 'string' ? phrase : phrase.other
+}
+
+function ours(status: number | string, key: TranslationKey): NormalizedApiError {
+  return { status, message: fallback(key), messageKey: key }
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -48,7 +77,9 @@ function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
 }
 
 /** Pulls the message out of a FastAPI `{ "detail": ... }` body. */
-function parseDetail(data: unknown): Pick<NormalizedApiError, 'message' | 'fieldErrors'> | null {
+function parseDetail(
+  data: unknown,
+): Pick<NormalizedApiError, 'message' | 'messageKey' | 'fieldErrors'> | null {
   if (!isObject(data) || !('detail' in data)) return null
 
   const detail = data['detail']
@@ -74,8 +105,15 @@ function parseDetail(data: unknown): Pick<NormalizedApiError, 'message' | 'field
     }
 
     const first = Object.values(fieldErrors)[0]
+
     return {
-      message: first ?? 'Please correct the highlighted fields.',
+      // A field message is the server's; the summary, when there is none, is ours.
+      ...(first
+        ? { message: first }
+        : {
+            message: fallback('error.fieldsHighlighted'),
+            messageKey: 'error.fieldsHighlighted' satisfies TranslationKey,
+          }),
       ...(Object.keys(fieldErrors).length > 0 ? { fieldErrors } : {}),
     }
   }
@@ -87,31 +125,33 @@ export function normalizeApiError(error: unknown): NormalizedApiError {
   if (isFetchBaseQueryError(error)) {
     if (typeof error.status === 'number') {
       const parsed = parseDetail(error.data)
-      return {
-        status: error.status,
-        message: parsed?.message ?? STATUS_MESSAGES[error.status] ?? GENERIC_MESSAGE,
-        ...(parsed?.fieldErrors ? { fieldErrors: parsed.fieldErrors } : {}),
-      }
+      if (parsed) return { status: error.status, ...parsed }
+
+      return ours(error.status, STATUS_KEYS[error.status] ?? GENERIC_KEY)
     }
 
-    return {
-      status: error.status,
-      message: TRANSPORT_MESSAGES[error.status] ?? GENERIC_MESSAGE,
-    }
+    return ours(error.status, TRANSPORT_KEYS[error.status] ?? GENERIC_KEY)
   }
 
   if (isObject(error) && ('message' in error || 'name' in error)) {
     const serialized = error as SerializedError
-    return {
-      status: serialized.code ?? 'UNKNOWN_ERROR',
-      message: serialized.message ?? GENERIC_MESSAGE,
+    if (serialized.message === undefined) {
+      return ours(serialized.code ?? 'UNKNOWN_ERROR', GENERIC_KEY)
     }
+
+    return { status: serialized.code ?? 'UNKNOWN_ERROR', message: serialized.message }
   }
 
-  return { status: 'UNKNOWN_ERROR', message: GENERIC_MESSAGE }
+  return ours('UNKNOWN_ERROR', GENERIC_KEY)
 }
 
-/** Convenience for the common "just show me a string" case. */
-export function getApiErrorMessage(error: unknown): string {
-  return normalizeApiError(error).message
+/**
+ * Convenience for the common "just show me a string" case.
+ *
+ * Pass the `t` from `useTranslation()` to get our own messages in the user's
+ * language; without one they come back in English.
+ */
+export function getApiErrorMessage(error: unknown, t?: TFunction): string {
+  const { message, messageKey } = normalizeApiError(error)
+  return messageKey && t ? t(messageKey) : message
 }

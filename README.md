@@ -34,16 +34,20 @@ than quietly becoming load-order spaghetti.
 
 ```
 src/
+├── index.css              Design foundation — every colour token lives here
 ├── app/                   Composition root — nothing reusable lives here
 │   ├── App.tsx            Store + router + top-level error boundary
-│   ├── layouts/           RootLayout, AuthLayout, AppLayout
+│   ├── layouts/           RootLayout, AuthLayout, AppLayout (shell), ChatLayout
+│   │                      + Sidebar, Topbar, Breadcrumbs, Page
 │   ├── router/            Route table, path helpers, auth guards
 │   └── store/             configureStore, root reducer, typed hooks, listeners
 │
 ├── features/              One folder per domain capability
 │   ├── auth/              login, registration, credential lifecycle
 │   ├── sessions/          conversation list, create / rename / delete
-│   └── chat/              messages, streaming, composer
+│   ├── chat/              messages, streaming, composer
+│   ├── dashboard/         derived metrics, KPI tiles, chart, ops rail
+│   └── ui/                theme, language + chrome preferences (nav rail, ops rail)
 │       ├── api/           RTK Query endpoints injected into the base API
 │       ├── model/         slices, types, zod schemas, validation
 │       ├── lib/           feature-local helpers
@@ -52,15 +56,91 @@ src/
 ├── pages/                 Thin route components that compose features
 ├── shared/                Cross-cutting, domain-agnostic
 │   ├── api/               baseApi, baseQuery, auth scopes, error normalising
-│   ├── config/            validated environment
-│   ├── lib/               cn, logger, jwt, form helpers
-│   └── ui/                Button, Field, Alert, Spinner, ErrorBoundary
+│   ├── config/            validated environment, navigation data
+│   ├── i18n/              English + Spanish dictionaries, `t`, locale context
+│   ├── lib/               cn, format, storage, logger, jwt, form helpers
+│   └── ui/                Button, Field, Card, Badge, Icon, BrandMark, …
 └── test/                  setup + `renderWithProviders`
 ```
 
 **Adding a feature**: create the folder, inject its endpoints into `baseApi`,
 add its slice to `rootReducer`, add its route to the router. Nothing else in
 the codebase needs to change.
+
+---
+
+## Design system
+
+The console is one flat plane: white surfaces, a single hairline instead of a
+shadow, dense small type, and the mark's green (`public/icon.svg`, `#10B981`)
+as the only accent. Green is reserved for meaning — the active nav item, the
+primary action, the focus ring, the chart's line — so nothing competes with it.
+
+Every colour, radius and shell dimension is a token in `src/index.css`, declared
+in Tailwind's `@theme` so it becomes a real utility (`bg-surface`, `text-muted`,
+`border-line`). Components reference the token, never a hex value: re-skinning
+the console is an edit to that one file. Dark mode is a second block of the same
+token names, selected by `data-theme="dark"` on `<html>` and written by the ui
+slice, so an explicit choice always beats the OS setting.
+
+Three rules keep it consistent:
+
+- **Icons come from the registry** (`shared/ui/Icon`), never inline SVG — one
+  stroke weight across the whole app.
+- **`cn()` merges classes** (clsx + tailwind-merge), so a `className` at the
+  call site overrides a primitive's own utility instead of fighting it.
+- **The brand mark is inlined** (`shared/ui/BrandMark`) and painted from tokens,
+  which is what lets it stay green and legible on every surface in both themes.
+
+---
+
+## Languages
+
+The console ships English and Spanish. `shared/i18n/en.ts` is the source of
+truth; `es.ts` is typed against it, so **a key added without a translation is a
+build error** rather than an English string leaking into a Spanish screen.
+
+```tsx
+const { t, fmt } = useTranslation()
+
+t('sessions.rename', { name })              // "Renombrar Triaje"
+t('opsRail.messageCount', { count: 1 })     // "1 mensaje" — `count` picks the form
+fmt.number(1234)                            // "1.234" in es, "1,234" in en
+```
+
+The chosen locale lives in the ui slice beside the theme, is persisted, and is
+published to the tree through a context in `shared/i18n` — that indirection is
+what lets `shared/ui` translate without importing the store. On a first visit
+the language follows the browser (the theme does not); an explicit choice always
+wins afterwards. The ui listener writes the BCP-47 tag to `<html lang>`, which
+is what picks a screen reader's voice and the browser's hyphenation dictionary.
+
+Both dictionaries ship in one chunk, so switching language is instant and has no
+loading state. What is *not* translated is text the server wrote: a FastAPI
+`detail` passes through verbatim, since replacing a specific explanation with a
+generic translated one would be a downgrade. Our own messages carry a
+`messageKey` out of `normalizeApiError` and are translated at the call site.
+
+---
+
+## The dashboard
+
+The API has no metrics endpoint, so `features/dashboard` derives its figures
+from the two endpoints that do exist — the session list, and each session's
+transcript. Every number on the screen is counted from real messages; none of
+it is stubbed.
+
+That costs one request per conversation, so the screen reads only the most
+recent *N* (the sample chip in the header, mirrored in the URL) and says so on
+the page. It gets at the data by dispatching the existing `listSessions` and
+`getMessages` endpoints rather than issuing its own requests, so the
+session-scoped tokens are attached exactly as the chat feature attaches them,
+a 401 on one transcript stays scoped to that session, and the transcripts land
+in the cache entries the chat screen reads — opening a conversation from the
+dashboard is instant.
+
+Recharts is loaded with `React.lazy` and only by the chart card, so it stays
+out of every other route's bundle.
 
 ---
 

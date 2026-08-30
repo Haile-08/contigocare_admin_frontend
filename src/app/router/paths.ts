@@ -7,6 +7,7 @@ export const paths = {
   root: '/',
   login: '/login',
   register: '/register',
+  dashboard: '/dashboard',
   chat: '/chat',
   chatSession: (sessionId: string) => `/chat/${encodeURIComponent(sessionId)}`,
 } as const

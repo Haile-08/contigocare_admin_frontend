@@ -4,6 +4,7 @@ import type { ReactElement } from 'react'
 import { Provider } from 'react-redux'
 import { MemoryRouter } from 'react-router-dom'
 
+import { Localized } from '@/app/providers/Localized'
 import { makeStore } from '@/app/store'
 import type { AppStore, RootState } from '@/app/store'
 
@@ -32,7 +33,11 @@ export function renderWithProviders(
   const result = render(ui, {
     wrapper: ({ children }) => (
       <Provider store={store}>
-        <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+        {/* The production bridge, not a stand-in: a test that dispatches
+            `localeChanged` re-renders exactly as the app does. */}
+        <Localized>
+          <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+        </Localized>
       </Provider>
     ),
     ...options,

@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import type { ChatSession } from '@/features/sessions/model/types'
 import { getApiErrorMessage } from '@/shared/api/errors'
+import { useTranslation } from '@/shared/i18n'
 import { Alert } from '@/shared/ui/Alert'
 import { Button } from '@/shared/ui/Button'
 
@@ -18,6 +19,7 @@ export interface ChatPanelProps {
 }
 
 export function ChatPanel({ session }: ChatPanelProps) {
+  const { t } = useTranslation()
   const sessionArgs = { sessionId: session.id, sessionToken: session.token }
 
   const { data: messages, isLoading, error } = useGetMessagesQuery(sessionArgs)
@@ -35,36 +37,36 @@ export function ChatPanel({ session }: ChatPanelProps) {
         messages: [{ role: 'user', content: text }],
       }).unwrap()
     } catch (streamFailure) {
-      setSendError(getApiErrorMessage(streamFailure))
+      setSendError(getApiErrorMessage(streamFailure, t))
     }
   }
 
   const handleClear = async (): Promise<void> => {
-    const confirmed = globalThis.confirm('Delete every message in this conversation?')
+    const confirmed = globalThis.confirm(t('chat.confirmClear'))
     if (!confirmed) return
     await clearMessages(sessionArgs)
   }
 
   return (
-    <section className="flex min-w-0 flex-1 flex-col bg-slate-50">
-      <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
-        <h1 className="truncate text-sm font-semibold text-slate-900">
-          {session.name || 'Untitled conversation'}
+    <section className="flex min-h-0 min-w-0 flex-1 flex-col bg-surface">
+      <header className="flex h-12.5 shrink-0 items-center justify-between gap-3 border-b border-line bg-surface pr-3 pl-4.5">
+        <h1 className="truncate text-[13.5px] font-medium tracking-[-0.01em] text-body">
+          {session.name || t('sessions.untitled')}
         </h1>
         <Button
           size="sm"
           variant="secondary"
-          onClick={handleClear}
+          onClick={() => void handleClear()}
           isLoading={isClearing}
           disabled={isStreaming}
         >
-          Clear history
+          {t('chat.clearHistory')}
         </Button>
       </header>
 
       {error ? (
-        <Alert tone="error" className="m-4">
-          {getApiErrorMessage(error)}
+        <Alert tone="error" className="mx-4.5 mt-4">
+          {getApiErrorMessage(error, t)}
         </Alert>
       ) : null}
 
@@ -75,7 +77,7 @@ export function ChatPanel({ session }: ChatPanelProps) {
       />
 
       {sendError ? (
-        <Alert tone="error" className="mx-4 mb-2">
+        <Alert tone="error" className="mx-4.5 mb-2">
           {sendError}
         </Alert>
       ) : null}

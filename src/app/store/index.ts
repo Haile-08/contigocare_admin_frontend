@@ -3,6 +3,7 @@ import { setupListeners } from '@reduxjs/toolkit/query'
 
 import { registerAuthListeners } from '@/features/auth/model/authListeners'
 import { loadPreloadedAuthState } from '@/features/auth/model/preloadedState'
+import { registerUiListeners } from '@/features/ui/model/uiListeners'
 import { baseApi } from '@/shared/api/baseApi'
 import { env } from '@/shared/config/env'
 
@@ -17,6 +18,7 @@ import type { RootState } from './types'
 export function makeStore(preloadedState?: Partial<RootState>) {
   const listener = createAppListenerMiddleware()
   registerAuthListeners(listener.startListening)
+  registerUiListeners(listener.startListening)
 
   const store = configureStore({
     reducer: rootReducer,

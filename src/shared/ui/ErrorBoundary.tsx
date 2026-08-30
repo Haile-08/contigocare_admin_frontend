@@ -1,9 +1,32 @@
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 
+import { useTranslation } from '@/shared/i18n'
 import { logger } from '@/shared/lib/logger'
 
 import { Button } from './Button'
+
+/**
+ * The default panel, split out as a function component purely so it can use
+ * the translation hook — a class component cannot.
+ */
+function DefaultFallback({ onReset }: { onReset: () => void }) {
+  const { t } = useTranslation()
+
+  return (
+    <div className="flex min-h-40 flex-col items-center justify-center gap-3 p-8 text-center">
+      <div>
+        <h2 className="text-[15px] font-medium tracking-[-0.01em] text-body">
+          {t('error.boundaryTitle')}
+        </h2>
+        <p className="mt-1 text-[12px] text-muted">{t('error.boundaryBody')}</p>
+      </div>
+      <Button variant="secondary" onClick={onReset}>
+        {t('common.tryAgain')}
+      </Button>
+    </div>
+  )
+}
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -46,18 +69,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     if (this.props.fallback) return this.props.fallback(error, this.reset)
 
-    return (
-      <div className="flex min-h-40 flex-col items-center justify-center gap-3 p-8 text-center">
-        <div>
-          <h2 className="text-base font-semibold text-slate-900">Something went wrong</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            The page hit an unexpected error. You can try again.
-          </p>
-        </div>
-        <Button variant="secondary" onClick={this.reset}>
-          Try again
-        </Button>
-      </div>
-    )
+    return <DefaultFallback onReset={this.reset} />
   }
 }

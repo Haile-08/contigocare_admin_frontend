@@ -44,7 +44,7 @@ export function RequireAnonymous() {
     // Only ever resume to an in-app path: an attacker-supplied absolute URL
     // here would turn the login page into an open redirect.
     const from = state?.from
-    const target = from && from.startsWith('/') && !from.startsWith('//') ? from : paths.chat
+    const target = from && from.startsWith('/') && !from.startsWith('//') ? from : paths.dashboard
     return <Navigate to={target} replace />
   }
 

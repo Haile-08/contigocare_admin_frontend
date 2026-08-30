@@ -11,10 +11,11 @@ export interface AlertProps {
   className?: string
 }
 
+/** Tinted, borderless — the same treatment as a status badge, one size up. */
 const TONES: Record<AlertTone, string> = {
-  error: 'bg-red-50 text-red-800 ring-red-200',
-  info: 'bg-slate-50 text-slate-700 ring-slate-200',
-  success: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
+  error: 'bg-critical-soft text-critical',
+  info: 'bg-surface-sunk text-mid',
+  success: 'bg-positive-soft text-positive',
 }
 
 export function Alert({ tone = 'info', title, children, className }: AlertProps) {
@@ -22,7 +23,11 @@ export function Alert({ tone = 'info', title, children, className }: AlertProps)
     <div
       // `alert` interrupts a screen reader; `status` waits for a pause.
       role={tone === 'error' ? 'alert' : 'status'}
-      className={cn('rounded-md px-3 py-2 text-sm ring-1 ring-inset', TONES[tone], className)}
+      className={cn(
+        'rounded-xs px-3 py-2 text-[12px] leading-relaxed',
+        TONES[tone],
+        className,
+      )}
     >
       {title ? <p className="font-medium">{title}</p> : null}
       {children}
