@@ -12,19 +12,29 @@ describe('translate', () => {
   })
 
   it('substitutes placeholders', () => {
-    expect(translate('es', 'sessions.rename', { name: 'Triaje' })).toBe('Renombrar Triaje')
+    expect(translate('es', 'dashboard.patientLabel', { id: 'MX-4821' })).toBe(
+      'Paciente MX-4821',
+    )
   })
 
   it('leaves a placeholder alone when no value is given for it', () => {
-    // Better a visible `{name}` in one label than a sentence with a hole in it.
-    expect(translate('en', 'sessions.rename', { other: 'x' })).toBe('Rename {name}')
+    // Better a visible `{id}` in one label than a sentence with a hole in it.
+    expect(translate('en', 'dashboard.patientLabel', { other: 'x' })).toBe('Patient {id}')
   })
 
   it('picks the singular form on a count of one, and the plural otherwise', () => {
-    expect(translate('en', 'opsRail.messageCount', { count: 1 })).toBe('1 message')
-    expect(translate('en', 'opsRail.messageCount', { count: 4 })).toBe('4 messages')
-    expect(translate('es', 'opsRail.messageCount', { count: 1 })).toBe('1 mensaje')
-    expect(translate('es', 'opsRail.messageCount', { count: 0 })).toBe('0 mensajes')
+    expect(translate('en', 'analysis.criticalCount', { count: 1 })).toBe(
+      '1 critical finding needs attention.',
+    )
+    expect(translate('en', 'analysis.criticalCount', { count: 4 })).toBe(
+      '4 critical findings need attention.',
+    )
+    expect(translate('es', 'analysis.criticalCount', { count: 1 })).toBe(
+      '1 hallazgo crítico requiere atención.',
+    )
+    expect(translate('es', 'analysis.criticalCount', { count: 0 })).toBe(
+      '0 hallazgos críticos requieren atención.',
+    )
   })
 
   it('binds a stable `t` per locale, so a memo on it does not rebuild every render', () => {

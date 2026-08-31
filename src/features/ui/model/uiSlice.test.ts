@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 
 import { STORAGE_KEYS } from '@/shared/lib/storage'
 
-import { localeChanged, themeToggled, uiSlice } from './uiSlice'
+import { analysisDrawerToggled, localeChanged, themeToggled, uiSlice } from './uiSlice'
 
 const reduce = uiSlice.reducer
 
@@ -29,6 +29,21 @@ describe('uiSlice — locale', () => {
     expect(reduce(spanish, localeChanged('es')).locale).toBe('es')
     expect(reduce(spanish, localeChanged('en')).locale).toBe('en')
   })
+})
+
+describe('uiSlice — analysis drawer', () => {
+  it('starts closed, and is never restored from a previous session', () => {
+    // Unlike the rail, this is work in progress rather than a preference.
+    expect(reduce(undefined, { type: '@@INIT' }).analysisDrawerOpen).toBe(false)
+  })
+
+  it('opens and closes explicitly, and toggles with no argument', () => {
+    const open = reduce(undefined, analysisDrawerToggled(true))
+    expect(open.analysisDrawerOpen).toBe(true)
+    expect(reduce(open, analysisDrawerToggled(true)).analysisDrawerOpen).toBe(true)
+    expect(reduce(open, analysisDrawerToggled()).analysisDrawerOpen).toBe(false)
+  })
+
 })
 
 describe('preferences that survive a bad localStorage', () => {

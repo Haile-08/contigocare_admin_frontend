@@ -27,16 +27,16 @@ import { Icon } from '@/shared/ui/Icon'
 
 /** Deliberately not numbers: the console does not have a metric to boast yet. */
 const CAPABILITIES: Array<{ title: TranslationKey; body: TranslationKey }> = [
-  { title: 'auth.capability.conversations', body: 'auth.capability.conversationsBody' },
-  { title: 'auth.capability.live', body: 'auth.capability.liveBody' },
-  { title: 'auth.capability.history', body: 'auth.capability.historyBody' },
+  { title: 'auth.capability.redaction', body: 'auth.capability.redactionBody' },
+  { title: 'auth.capability.evidence', body: 'auth.capability.evidenceBody' },
+  { title: 'auth.capability.retention', body: 'auth.capability.retentionBody' },
 ]
 
 const TOPICS: TranslationKey[] = [
-  'auth.topic.sessions',
-  'auth.topic.messages',
-  'auth.topic.streaming',
-  'auth.topic.history',
+  'auth.topic.gmm',
+  'auth.topic.coverage',
+  'auth.topic.waiting',
+  'auth.topic.exclusions',
 ]
 
 export function AuthLayout() {

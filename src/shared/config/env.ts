@@ -8,6 +8,11 @@ import { z } from 'zod'
  * the values once, here, turns that into a loud failure at startup instead.
  *
  * Never read `import.meta.env` outside this module.
+ *
+ * There is no `tokenStorage` setting any more. The access token is held in
+ * memory and nowhere else, and the refresh token is an HttpOnly cookie the
+ * browser manages — so there is no storage choice left for a deployment to get
+ * wrong. A knob that silently does nothing is worse than no knob.
  */
 
 const booleanish = z
@@ -27,7 +32,6 @@ const envSchema = z.object({
   appName: z.string().min(1),
   enableDevtools: booleanish,
   requestTimeoutMs: z.coerce.number().int().positive().max(120_000),
-  tokenStorage: z.enum(['session', 'memory']),
 })
 
 const parsed = envSchema.safeParse({
@@ -36,7 +40,6 @@ const parsed = envSchema.safeParse({
   // DevTools expose the whole store (including tokens) to any page extension.
   enableDevtools: import.meta.env.VITE_ENABLE_DEVTOOLS ?? (isProduction ? 'false' : 'true'),
   requestTimeoutMs: import.meta.env.VITE_REQUEST_TIMEOUT_MS ?? '30000',
-  tokenStorage: import.meta.env.VITE_TOKEN_STORAGE ?? 'session',
 })
 
 if (!parsed.success) {

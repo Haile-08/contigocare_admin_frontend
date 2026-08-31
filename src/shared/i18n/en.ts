@@ -11,11 +11,15 @@ import type { Phrase } from './types'
  * Keys are dotted and grouped by the surface they appear on. Text the *server*
  * produces (a FastAPI `detail`, a validation message from Pydantic) is not in
  * here — we cannot translate a string we did not write, so those pass through.
+ * That matters more in this app than most: the API answers in Spanish, and its
+ * messages are about Mexican policy documents, so passing them through is more
+ * accurate than any translation this file could carry.
  */
 export const en = {
   /* ------------------------------------------------------------- common */
 
   'common.tryAgain': 'Try again',
+  'common.retry': 'Retry',
   'common.reload': 'Reload',
   'common.save': 'Save',
   'common.cancel': 'Cancel',
@@ -23,6 +27,7 @@ export const en = {
   'common.all': 'All',
   'common.viewAll': 'View all',
   'common.open': 'Open',
+  'common.close': 'Close',
   'common.loading': 'Loading',
   'common.language': 'Language',
 
@@ -32,7 +37,7 @@ export const en = {
   'nav.overview': 'Overview',
   'nav.work': 'Work',
   'nav.dashboard': 'Dashboard',
-  'nav.conversations': 'Conversations',
+  'nav.policies': 'Policies',
   'nav.breadcrumb': 'Breadcrumb',
 
   /* ------------------------------------------------------------- topbar */
@@ -49,153 +54,358 @@ export const en = {
 
   /* --------------------------------------------------------- auth shell */
 
-  'auth.eyebrow': 'Care assistant · Admin console',
-  'auth.headlineLead': 'Every conversation.',
-  'auth.headlineAccent': 'One console.',
+  'auth.eyebrow': 'Insurance analysis · Internal console',
+  'auth.headlineLead': 'Every policy.',
+  'auth.headlineAccent': 'Read in seconds.',
   'auth.intro':
-    'Open a thread, follow the assistant as it answers, and keep the whole history in one place — without leaving the browser.',
-  'auth.capability.conversations': 'Conversations',
-  'auth.capability.conversationsBody': 'Every session the assistant has held, in one list.',
-  'auth.capability.live': 'Live replies',
-  'auth.capability.liveBody': 'Answers stream in token by token, as they are written.',
-  'auth.capability.history': 'Full history',
-  'auth.capability.historyBody': 'Rename, revisit or clear any thread from the console.',
-  'auth.topic.sessions': 'Sessions',
-  'auth.topic.messages': 'Messages',
-  'auth.topic.streaming': 'Streaming',
-  'auth.topic.history': 'History',
-  'auth.footer': 'Internal console · account required',
+    'Upload a Mexican GMM policy, confirm what gets removed, and get a structured analysis with a citation behind every figure.',
+  'auth.capability.redaction': 'Redaction first',
+  'auth.capability.redactionBody':
+    'Personal data is found and removed before anything leaves this network.',
+  'auth.capability.evidence': 'Cited answers',
+  'auth.capability.evidenceBody': 'Every extracted value quotes the line it came from.',
+  'auth.capability.retention': 'Nothing stored',
+  'auth.capability.retentionBody': 'The policy is parsed in memory and never written to disk.',
+  'auth.topic.gmm': 'Gastos Médicos Mayores',
+  'auth.topic.coverage': 'Coberturas',
+  'auth.topic.waiting': 'Periodos de espera',
+  'auth.topic.exclusions': 'Exclusiones',
+  'auth.footer': 'Authorised personnel only',
 
-  /* --------------------------------------------------------------- login */
+  /* -------------------------------------------------------------- login */
 
   'login.title': 'Sign in',
-  'login.subtitle': 'Use your ContigoCare account.',
+  'login.subtitle': 'Enter your credentials to continue.',
+  'login.submit': 'Continue',
   'login.sessionExpired': 'Your session expired. Please sign in again.',
-  'login.submit': 'Sign in',
-  'login.noAccount': 'No account yet?',
-  'login.createOne': 'Create one',
   'login.note':
-    'Conversations are tied to the account that opened them. Sign in with the address your team registered.',
+    'Accounts are provisioned by an administrator. There is no self-registration.',
 
-  /* ------------------------------------------------------------ register */
+  /* ---------------------------------------------------------------- mfa */
 
-  'register.title': 'Create your account',
-  'register.subtitle': 'It takes a moment.',
-  'register.submit': 'Create account',
-  'register.haveAccount': 'Already have an account?',
-  'register.signIn': 'Sign in',
+  'mfa.title': 'Two-factor verification',
+  'mfa.subtitle': 'Enter the 6-digit code from Google Authenticator.',
+  'mfa.codeLabel': 'Verification code',
+  'mfa.codeHint': 'The code changes every 30 seconds.',
+  'mfa.submit': 'Verify',
+  'mfa.useRecovery': 'Use a recovery code instead',
 
-  /* -------------------------------------------------------------- fields */
+  /* ----------------------------------------------------------- enrolment */
+
+  'enroll.title': 'Set up two-factor authentication',
+  'enroll.subtitle': 'This is required before you can use the console.',
+  'enroll.step1': 'Install Google Authenticator on your phone, if you have not already.',
+  'enroll.step2': 'Open the app, tap the plus button and scan the code below.',
+  'enroll.step3': 'Enter the 6-digit code the app shows, to confirm it works.',
+  'enroll.qrAlt': 'QR code for two-factor setup',
+  'enroll.cannotScan': 'Cannot scan the code?',
+  'enroll.hideSecret': 'Hide setup key',
+  'enroll.secretHint': 'Enter this key in the app manually.',
+  'enroll.codeLabel': 'Code from the app',
+  'enroll.codeHint': 'Six digits, no spaces.',
+  'enroll.submit': 'Confirm and sign in',
+  'enroll.startFailed': 'Could not start setup. Please try again.',
+
+  /* ------------------------------------------------------------ recovery */
+
+  'recovery.title': 'Use a recovery code',
+  'recovery.subtitle': 'For when you cannot reach your authenticator app.',
+  'recovery.warning':
+    'Each recovery code works once. After signing in, ask an administrator to reset your authenticator.',
+  'recovery.step1': 'Find the recovery codes you saved when you set up two-factor authentication.',
+  'recovery.step2': 'Pick one you have not used yet and type it below.',
+  'recovery.step3': 'After signing in, ask an administrator to reset your authenticator.',
+  'recovery.lostCodes': 'Do not have your codes?',
+  'recovery.hideHelp': 'Hide help',
+  'recovery.lostCodesHint':
+    'Only an administrator can reset two-factor authentication for your account. Contact one to get back in.',
+  'recovery.codeLabel': 'Recovery code',
+  'recovery.codeHint': 'Ten characters, in the format XXXXX-XXXXX.',
+  'recovery.submit': 'Sign in',
+  'recovery.backToCode': 'Back to authenticator code',
+
+  /* ------------------------------------------------------ recovery codes */
+
+  'recoveryCodes.title': 'Save your recovery codes',
+  'recoveryCodes.subtitle': 'This is the only time they are shown.',
+  'recoveryCodes.step1': 'Copy or print these codes and keep them somewhere only you can reach.',
+  'recoveryCodes.step2': 'Use one to sign in if you ever lose access to your phone.',
+  'recoveryCodes.step3': 'Each code works once, and there are no more after these ten.',
+  'recoveryCodes.warning':
+    'Save these now. They are shown once and cannot be retrieved later. Each one works a single time.',
+  'recoveryCodes.copy': 'Copy all',
+  'recoveryCodes.copied': 'Copied',
+  'recoveryCodes.print': 'Print',
+  'recoveryCodes.acknowledge': 'I have saved these codes somewhere safe.',
+  'recoveryCodes.continue': 'Continue to the console',
+
+  /* ----------------------------------------------------- password reset */
+
+  'forgot.link': 'Forgot your password?',
+  'forgot.title': 'Reset your password',
+  'forgot.subtitle': 'We will email you a link to choose a new one.',
+  'forgot.step1': 'Enter the email address your account uses.',
+  'forgot.step2': 'Open the link we send. It expires in 30 minutes and works once.',
+  'forgot.step3': 'Choose a new password, then sign in with it and your authenticator code.',
+  'forgot.submit': 'Send the link',
+  'forgot.backToLogin': 'Back to sign in',
+  'forgot.sentTitle': 'Check your email',
+  'forgot.sentBody':
+    'If an account exists for {email}, a link to reset the password is on its way. It expires in 30 minutes.',
+  'forgot.sentHint': 'Nothing arrived? Check the spam folder, then try again in a few minutes.',
+  'forgot.resend': 'Send it again',
+
+  'reset.title': 'Choose a new password',
+  'reset.subtitle': 'This link works once, and only for the next few minutes.',
+  'reset.step1': 'Pick a password at least 12 characters long, with a letter and a number.',
+  'reset.step2': 'Type it twice so a slip does not lock you out.',
+  'reset.step3': 'Sign in with the new password and your Google Authenticator code.',
+  'reset.newPassword': 'New password',
+  'reset.confirmPassword': 'Confirm new password',
+  'reset.passwordHint': 'At least 12 characters, including a letter and a number.',
+  'reset.submit': 'Update password',
+  'reset.missingToken': 'This link is incomplete. Request a new one from the sign-in screen.',
+  'reset.doneTitle': 'Password updated',
+  'reset.doneBody':
+    'Your password has been changed and every other session was signed out. Sign in with the new password and your authenticator code.',
+  'reset.goToLogin': 'Go to sign in',
+  'reset.mfaNote':
+    'Resetting a password does not change your two-factor setup — you will still need a code from Google Authenticator.',
+
+  /* ---------------------------------------------------------- dashboard */
+
+  'dashboard.title': 'Dashboard',
+  'dashboard.description': 'Volume, speed and — most importantly — how often the agent is right.',
+  'dashboard.newAnalysis': 'New analysis',
+  'dashboard.totalAnalyses': 'Analyses',
+  'dashboard.lastSevenDays': '{count} in the last 7 days',
+  'dashboard.patients': 'Patients',
+  'dashboard.successRate': 'Success rate',
+  'dashboard.successHint': 'Runs that produced an analysis',
+  'dashboard.medianLatency': 'Median time',
+  'dashboard.latencyHint': 'Model time per policy',
+  'dashboard.accuracy': 'Accuracy',
+  'dashboard.accuracyHint': 'Across {count} reviewed analyses',
+  'dashboard.accuracyEmpty': 'No analyses reviewed yet',
+  'dashboard.reviewRate': 'Reviewed',
+  'dashboard.reviewHint': 'Share of analyses given a verdict',
+  'dashboard.blocked': 'Blocked',
+  'dashboard.blockedHint': 'Refused for residual personal data',
+  'dashboard.blockedWarning': {
+    one: '{count} submission was refused because personal data was still present. Check the redaction step.',
+    other:
+      '{count} submissions were refused because personal data was still present. Check the redaction step.',
+  },
+  'dashboard.recent': 'Recent analyses',
+  'dashboard.recentHint': 'Newest first',
+  'dashboard.patientLabel': 'Patient {id}',
+  'dashboard.unknownInsurer': 'Insurer not identified',
+  'dashboard.criticalFindings': {
+    one: '{count} critical',
+    other: '{count} critical',
+  },
+  'dashboard.awaitingReview': 'Awaiting review',
+  'dashboard.emptyTitle': 'No analyses yet',
+  'dashboard.emptyDescription': 'Run your first policy analysis to see it here.',
+  'dashboard.redactionTitle': 'Data removed',
+  'dashboard.redactionHint': 'Identifiers stripped before the model, by type',
+  'dashboard.noRedactions': 'Nothing redacted yet.',
+
+  /* ----------------------------------------------------------- policies */
+
+  'policies.title': 'Policies',
+  'policies.description': 'Every policy that has been analysed, newest first.',
+  'policies.analyze': 'Analyse policy',
+  'policies.search': 'Search by patient ID',
+  'policies.searchPlaceholder': 'Patient ID',
+  'policies.count': {
+    one: '{count} policy',
+    other: '{count} policies',
+  },
+  'policies.range': '{from}–{to} of {total}',
+  'policies.previous': 'Previous',
+  'policies.next': 'Next',
+  'policies.emptyTitle': 'No policies analysed yet',
+  'policies.emptyDescription': 'Analyse your first policy and it will appear here.',
+  'policies.noMatchTitle': 'No policies for that patient',
+  'policies.noMatchDescription': 'Check the ID, or clear the search to see everything.',
+  'policies.clearSearch': 'Clear search',
+  'policies.detailCrumb': 'Policy',
+
+  /* ------------------------------------------------------ policy detail */
+
+  'policyDetail.title': 'Policy',
+  'policyDetail.ranAt': 'Analysed {when} · {pages} pages',
+  'policyDetail.backToList': 'All policies',
+  'policyDetail.tabAnalysis': 'Analysis',
+  'policyDetail.tabPolicy': 'Redacted policy',
+  'policyDetail.policyHint':
+    'Exactly what the model was given. The uploaded document itself was never stored.',
+  'policyDetail.charCount': '{count} characters',
+  'policyDetail.noText': 'No text was stored for this run.',
+  'policyDetail.noResult': 'This run did not produce an analysis.',
+
+  /* ------------------------------------------------------------- wizard */
+
+  'wizard.title': 'Analyse a policy',
+  'wizard.description': 'Three steps: identify the patient, confirm the redaction, review the result.',
+  'wizard.step1': 'Patient and policy',
+  'wizard.step1Hint': 'Who it is for, and the document',
+  'wizard.step2': 'Redact',
+  'wizard.step2Hint': 'Confirm what is removed',
+  'wizard.step3': 'Review and save',
+  'wizard.step3Hint': 'Check the values, give a verdict',
+  'wizard.skipReview': 'Save without a review',
+
+  /* ----------------------------------------------------------- analysis */
+
+  'analysis.title': 'Policy analysis',
+  'analysis.description':
+    'Upload a policy, confirm what is removed, and review the structured result.',
+  'analysis.newAnalysis': 'Start over',
+  'analysis.patientId': 'Patient ID',
+  'analysis.patientIdHint': 'The identifier this analysis will be filed under.',
+  'analysis.patientIdRequired': 'Enter a patient ID before uploading.',
+  'analysis.forPatient': 'Analysis for patient {id}',
+  'analysis.summary': 'Summary',
+  'analysis.policyData': 'Policy details',
+  'analysis.coverage': 'Coverage',
+  'analysis.findings': 'Findings',
+  'analysis.benefits': 'Benefits',
+  'analysis.waitingPeriods': 'Waiting periods',
+  'analysis.exclusions': 'Exclusions',
+  'analysis.preexisting': 'Pre-existing conditions',
+  'analysis.notFound': 'Not found',
+  'analysis.showEvidence': 'Show source',
+  'analysis.hideEvidence': 'Hide source',
+  'analysis.page': 'Page {page}',
+  'analysis.showEnglish': 'Show English summary',
+  'analysis.showSpanish': 'Show Spanish summary',
+  'analysis.criticalCount': {
+    one: '{count} critical finding needs attention.',
+    other: '{count} critical findings need attention.',
+  },
+  'analysis.provenance': '{model} · prompt {prompt} · {seconds}s · {tokens} tokens',
+  'analysis.selfCritiqueApplied': 'self-review applied',
+
+  /* ------------------------------------------------------------- upload */
+
+  'upload.cta': 'Drop a policy here, or click to choose a file',
+  'upload.hint': 'PDF, PNG, JPG or WEBP · up to 15 MB',
+  'upload.processing': 'Reading the document',
+  'upload.processingHint': 'Scanned pages are read with OCR, which can take a minute.',
+  'upload.tooLarge': 'That file is larger than {size}.',
+  'upload.wrongType': 'That file type is not supported.',
+  'upload.privacyNote':
+    'The document is parsed in memory and never written to disk. Only the text you approve is sent for analysis.',
+
+  /* ---------------------------------------------------------- redaction */
+
+  'redaction.title': 'Confirm what gets removed',
+  'redaction.summary': '{selected} of {total} items marked for removal',
+  'redaction.confirm': 'Redact and analyse',
+  'redaction.all': 'Select all',
+  'redaction.none': 'Clear',
+  'redaction.lowConfidence': 'Low confidence — check before removing',
+  'redaction.noneDetected': 'No personal data detected. Review the text before continuing.',
+  'redaction.redactSelection': 'Redact selection',
+  'redaction.selectionPreview': 'Selected: “{text}”',
+  'redaction.blocking': {
+    one: '{count} item must be removed before this can be analysed.',
+    other: '{count} items must be removed before this can be analysed.',
+  },
+  'redaction.ocrNotice': '{pages} of {total} pages were read with OCR. Check figures carefully.',
+  'redaction.duplicate': 'This document has been analysed before.',
+
+  /* ----------------------------------------------------------- feedback */
+
+  'feedback.title': 'Was this analysis correct?',
+  'feedback.editTitle': 'Your review',
+  'feedback.editedOn': 'Recorded {date}. Change anything below and save.',
+  'feedback.saveChanges': 'Save changes',
+  'feedback.why':
+    'Your verdict becomes a test case. It is the only thing that tells us whether a change to the agent made it better.',
+  'feedback.verdict.correct': 'Correct',
+  'feedback.verdict.partially_correct': 'Partly correct',
+  'feedback.verdict.incorrect': 'Incorrect',
+  'feedback.correctFields': 'Correct specific fields',
+  'feedback.hideFields': 'Hide field corrections',
+  'feedback.correctionHint':
+    'Enter the right value, or mark a field as invented if the agent produced something that is not in the policy.',
+  'feedback.shouldBe': 'Correct value for {field}',
+  'feedback.shouldBePlaceholder': 'Correct value',
+  'feedback.invented': 'Invented',
+  'feedback.markInvented': 'The policy does not contain this value',
+  'feedback.notes': 'Notes (optional)',
+  'feedback.submit': 'Submit review',
+  'feedback.thanks': 'Recorded. Thank you — this is what makes the agent better.',
+  'feedback.failed': 'Could not save your review. Please try again.',
+
+  /* --------------------------------------------------------- vocabulary */
+
+  'confidence.alta': 'High confidence',
+  'confidence.media': 'Medium confidence',
+  'confidence.baja': 'Low confidence',
+  'confidence.no_encontrado': 'Not found',
+
+  'severity.critica': 'Critical',
+  'severity.alta': 'High',
+  'severity.media': 'Medium',
+  'severity.informativa': 'Info',
+
+  'status.succeeded': 'Succeeded',
+  'status.failed': 'Failed',
+  'status.blocked_by_redaction': 'Blocked',
+
+  /* Policy fields. Spanish terms are kept in the English dictionary where the
+     Spanish is the contractual term — "coaseguro" and "coinsurance" are not
+     interchangeable in a Mexican policy, and translating it here would make the
+     console disagree with the document on screen. */
+  'field.poliza.numero_poliza': 'Policy number',
+  'field.poliza.aseguradora': 'Insurer',
+  'field.poliza.nombre_plan': 'Plan',
+  'field.poliza.ramo': 'Line of business',
+  'field.poliza.moneda': 'Currency',
+  'field.poliza.vigencia_inicio': 'Cover starts',
+  'field.poliza.vigencia_fin': 'Cover ends',
+  'field.poliza.fecha_emision': 'Issued',
+  'field.poliza.antiguedad': 'Antigüedad (tenure)',
+  'field.poliza.forma_pago': 'Payment frequency',
+  'field.poliza.prima_total': 'Premium',
+  'field.poliza.contratante': 'Policyholder',
+  'field.poliza.titular': 'Primary insured',
+  'field.poliza.numero_dependientes': 'Dependants',
+
+  'field.cobertura.suma_asegurada': 'Suma asegurada (sum insured)',
+  'field.cobertura.suma_asegurada_por_padecimiento': 'Sum insured per condition',
+  'field.cobertura.deducible': 'Deducible (deductible)',
+  'field.cobertura.coaseguro_porcentaje': 'Coaseguro',
+  'field.cobertura.tope_coaseguro': 'Coaseguro cap',
+  'field.cobertura.nivel_hospitalario': 'Hospital tier',
+  'field.cobertura.tabulador_medico': 'Fee schedule',
+  'field.cobertura.cobertura_geografica': 'Geographic cover',
+  'field.cobertura.red_hospitalaria': 'Hospital network',
+
+  /* ------------------------------------------------------------- fields */
 
   'field.email': 'Email',
   'field.emailPlaceholder': 'you@contigo.care',
   'field.password': 'Password',
   'field.showPassword': 'Show password',
   'field.hidePassword': 'Hide password',
-  'field.displayName': 'Display name',
-  'field.displayNameHint': 'Optional — the assistant uses it to address you.',
-  'field.passwordHint':
-    '8+ characters with an uppercase letter, a lowercase letter, a number and a special character.',
 
-  /* ---------------------------------------------------------- validation */
+  /* --------------------------------------------------------- validation */
 
-  'validation.email': 'Enter a valid email address',
-  'validation.passwordRequired': 'Enter your password',
-  'validation.passwordMin': 'Use at least 8 characters',
-  'validation.passwordMax': 'Use at most 64 characters',
-  'validation.passwordUppercase': 'Add an uppercase letter',
-  'validation.passwordLowercase': 'Add a lowercase letter',
-  'validation.passwordNumber': 'Add a number',
-  'validation.passwordSpecial': 'Add a special character (for example !, ? or @)',
-  'validation.nameMax': 'Use at most 50 characters',
+  'validation.email': 'Enter a valid email address.',
+  'validation.passwordRequired': 'Enter your password.',
+  'validation.mfaCode': 'Enter the 6-digit code.',
+  'validation.recoveryCode': 'Enter a complete recovery code.',
+  'validation.passwordLength': 'Use at least {min} characters.',
+  'validation.passwordLetter': 'Include at least one letter.',
+  'validation.passwordNumber': 'Include at least one number.',
+  'validation.passwordMismatch': 'The two passwords do not match.',
 
-  /* ----------------------------------------------------------- dashboard */
-
-  'dashboard.title': 'Overview',
-  'dashboard.emptyCount': { one: '{count} empty', other: '{count} empty' },
-  'dashboard.activeCount': { one: '{count} active', other: '{count} active' },
-  'dashboard.sampleSize': 'Sample size',
-  'dashboard.sampleOption': {
-    one: '{count} conversation',
-    other: '{count} conversations',
-  },
-  'dashboard.showPanel': 'Show panel',
-
-  'dashboard.stat.conversations': 'Conversations',
-  'dashboard.stat.conversationsCaptionAll': 'All read',
-  'dashboard.stat.conversationsCaptionPartial': '{count} read for this view',
-  'dashboard.stat.messages': 'Messages',
-  'dashboard.stat.messagesCaption': 'across {sampled} of {total} conversations',
-  'dashboard.stat.asked': 'Asked',
-  'dashboard.stat.askedCaption': 'Turns written by a person',
-  'dashboard.stat.answered': 'Answered',
-  'dashboard.stat.answeredCaption': 'Replies from the assistant',
-  'dashboard.stat.average': 'Average thread',
-  'dashboard.stat.averageCaption': 'Messages per active conversation',
-  'dashboard.stat.openConversations': 'Open conversations',
-  'dashboard.stat.readThreads': 'Read the threads',
-
-  'dashboard.chart.title': 'Volume by conversation',
-  'dashboard.chart.empty': 'Nothing to chart yet — this fills in with the first message.',
-  'dashboard.busiest': 'Busiest conversations',
-  'dashboard.busiestEmpty': 'No conversations yet. Start one from Conversations.',
-  'dashboard.row.unavailable': 'Transcript could not be read',
-  'dashboard.row.noMessages': 'No messages yet — open it to ask the first question.',
-  'dashboard.row.awaitingReply': 'Awaiting reply',
-  'dashboard.row.answered': 'Answered',
-  'dashboard.row.messageAbbrev': 'msg',
-
-  /* ------------------------------------------------------------ ops rail */
-
-  'opsRail.label': 'Today',
-  'opsRail.hidePanel': 'Hide panel',
-  'opsRail.waiting': 'Ended on a question',
-  'opsRail.waitingEmpty': 'Every conversation ends with an answer.',
-  'opsRail.unstarted': 'Never started',
-  'opsRail.unstartedEmpty': 'No empty conversations left lying around.',
-  'opsRail.badgeEmpty': 'Empty',
-  'opsRail.messageMix': 'Message mix',
-  'opsRail.mixEmpty': 'Nothing said yet.',
-  'opsRail.method': 'How this is counted',
-  'opsRail.methodBody':
-    'The API has no metrics endpoint, so every figure here is counted from the transcripts themselves — one read per conversation in the sample.',
-  'opsRail.methodPartial':
-    'Showing {sampled} of {total} conversations. Raise the sample from the header to widen it.',
-  'opsRail.messageCount': { one: '{count} message', other: '{count} messages' },
-
-  /* ---------------------------------------------------------- session list */
-
-  'sessions.label': 'Conversations',
-  'sessions.title': 'Conversations',
-  'sessions.new': 'New',
-  'sessions.untitled': 'Untitled conversation',
-  'sessions.thisConversation': 'this conversation',
-  'sessions.fallbackName': 'conversation',
-  'sessions.empty': 'No conversations yet. Start one with “New”.',
-  'sessions.rename': 'Rename {name}',
-  'sessions.delete': 'Delete {name}',
-  'sessions.confirmDelete': 'Delete “{name}” and its history? This cannot be undone.',
-  'sessions.nameLabel': 'Conversation name',
-
-  /* ----------------------------------------------------------------- chat */
-
-  'chat.clearHistory': 'Clear history',
-  'chat.confirmClear': 'Delete every message in this conversation?',
-  'chat.loading': 'Loading conversation',
-  'chat.messageLabel': 'Message',
-  'chat.placeholder': 'Send a message…',
-  'chat.send': 'Send',
-  'chat.tooLong': '{current} / {max} characters — shorten the message to send it.',
-  'chat.thinking': 'Thinking…',
-  'chat.youSaid': 'You said: ',
-  'chat.assistantSaid': 'Assistant said: ',
-  'chat.noMessages': 'No messages yet. Ask a question below to start the conversation.',
-  'chat.noneSelected': 'No conversation selected',
-  'chat.noneSelectedBody': 'Pick a conversation from the sidebar, or start a new one.',
-  'chat.gone': 'This conversation no longer exists.',
-  'chat.backToConversations': 'Back to conversations',
-
-  /* --------------------------------------------------------------- errors */
+  /* -------------------------------------------------------------- error */
 
   'error.generic': 'Something went wrong. Please try again.',
   'error.fetch': 'Could not reach the server. Check your connection and try again.',

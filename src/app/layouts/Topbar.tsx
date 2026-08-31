@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
-import { loggedOut, selectAuthUser } from '@/features/auth/model/authSlice'
+import { useLogoutMutation } from '@/features/auth/api/authApi'
+import { selectAdmin } from '@/features/auth/model/authSlice'
 import {
   mobileNavToggled,
   selectSidebarCollapsed,
@@ -23,10 +24,15 @@ const ICON_BUTTON =
 
 export function Topbar() {
   const dispatch = useAppDispatch()
-  const user = useAppSelector(selectAuthUser)
+  const admin = useAppSelector(selectAdmin)
   const theme = useAppSelector(selectTheme)
   const collapsed = useAppSelector(selectSidebarCollapsed)
   const { t } = useTranslation()
+
+  // Signing out is a server-side action: it revokes the whole refresh-token
+  // family and clears the HttpOnly cookie. Clearing local state alone would
+  // leave a live cookie that could mint a new session on the next reload.
+  const [logout] = useLogoutMutation()
 
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -51,7 +57,7 @@ export function Topbar() {
     }
   }, [menuOpen])
 
-  const name = user?.username ?? user?.email ?? null
+  const name = admin?.fullName || admin?.email || null
 
   return (
     <header className="flex h-topbar shrink-0 items-center gap-2.5 border-b border-line bg-surface pr-3 pl-3.5">
@@ -121,7 +127,7 @@ export function Topbar() {
             className="flex items-center gap-2.25 rounded-full py-1 pr-2.5 pl-1 transition-colors hover:bg-surface-sunk"
           >
             <span className="grid size-6.75 place-items-center rounded-full bg-brand-soft text-[11px] font-medium text-ink">
-              {initials(user?.username, user?.email)}
+              {initials(admin?.fullName, admin?.email)}
             </span>
             <span className="hidden max-w-40 truncate text-[12.5px] text-mid sm:inline">
               {name ?? t('topbar.account')}
@@ -138,16 +144,16 @@ export function Topbar() {
             >
               <div className="border-b border-line-faint px-3 py-2.5">
                 <p className="truncate text-[12.5px] font-medium text-body">
-                  {user?.username ?? t('topbar.signedIn')}
+                  {admin?.fullName || t('topbar.signedIn')}
                 </p>
-                <p className="truncate text-[11px] text-muted">{user?.email}</p>
+                <p className="truncate text-[11px] text-muted">{admin?.email}</p>
               </div>
               <button
                 type="button"
                 role="menuitem"
                 onClick={() => {
                   setMenuOpen(false)
-                  dispatch(loggedOut('user-action'))
+                  void logout()
                 }}
                 className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-[12.5px] text-mid transition-colors hover:bg-surface-sunk hover:text-body"
               >

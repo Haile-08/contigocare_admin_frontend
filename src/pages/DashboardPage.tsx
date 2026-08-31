@@ -1,277 +1,264 @@
-import { Suspense, lazy, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
+import { Page, PageHeader } from '@/app/layouts/Page'
 import { paths } from '@/app/router/paths'
-import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
-import { useGetOverviewQuery } from '@/features/dashboard/api/metricsApi'
-import { OpsRail } from '@/features/dashboard/ui/OpsRail'
-import { RecentConversations } from '@/features/dashboard/ui/RecentConversations'
-import { SeriesLegend } from '@/features/dashboard/ui/SeriesLegend'
+import { useAppDispatch } from '@/app/store/hooks'
+import { useGetOverviewQuery } from '@/features/dashboard/api/dashboardApi'
 import { StatCard } from '@/features/dashboard/ui/StatCard'
-import { opsRailToggled, selectOpsRailOpen } from '@/features/ui/model/uiSlice'
+import { analysisDrawerToggled } from '@/features/ui/model/uiSlice'
 import { useTranslation } from '@/shared/i18n'
-import { Card, CardLink } from '@/shared/ui/Card'
+import type { TFunction, TranslationKey } from '@/shared/i18n'
+import { cn } from '@/shared/lib/cn'
+import { Alert } from '@/shared/ui/Alert'
+import { Badge } from '@/shared/ui/Badge'
+import { Button } from '@/shared/ui/Button'
+import { Card, CardHeader, CardLink } from '@/shared/ui/Card'
+import { EmptyState } from '@/shared/ui/EmptyState'
 import { ErrorState } from '@/shared/ui/ErrorState'
-import { Icon } from '@/shared/ui/Icon'
-import { SelectChip } from '@/shared/ui/SelectChip'
 import { Skeleton } from '@/shared/ui/Skeleton'
 
-/**
- * Recharts is ~90 kB and only this card needs it. Loading it separately means
- * the KPI row and the rest of the dashboard paint immediately, with the chart
- * filling in a moment later behind its own skeleton.
- */
-const VolumeChart = lazy(() => import('@/features/dashboard/ui/VolumeChart'))
+function percent(value: number): string {
+  return `${(value * 100).toFixed(0)}%`
+}
 
-/* ------------------------------------------------------------------ filters */
+const VERDICT_TONE = {
+  correct: 'positive',
+  partially_correct: 'warning',
+  incorrect: 'critical',
+} as const
 
-/**
- * How many conversations to read for the snapshot. This is a real cost, not a
- * display preference: each one is a request, so the control says what it does
- * and defaults low.
- */
-const SAMPLES = ['6', '12', '24'] as const
-type Sample = (typeof SAMPLES)[number]
+// Verdict and status arrive as strings from the API, so they are mapped to
+// typed keys rather than interpolated into `t`. An unrecognised value falls
+// back to showing itself, which is more useful than a blank cell when the
+// backend adds a state the console has not learned yet.
+const VERDICT_LABEL: Record<string, TranslationKey> = {
+  correct: 'feedback.verdict.correct',
+  partially_correct: 'feedback.verdict.partially_correct',
+  incorrect: 'feedback.verdict.incorrect',
+}
 
-const isSample = (value: string | null): value is Sample =>
-  SAMPLES.some((sample) => sample === value)
+const STATUS_LABEL: Record<string, TranslationKey> = {
+  succeeded: 'status.succeeded',
+  failed: 'status.failed',
+  blocked_by_redaction: 'status.blocked_by_redaction',
+}
 
-/* ---------------------------------------------------------------- dashboard */
+function verdictLabel(t: TFunction, verdict: string): string {
+  const key = VERDICT_LABEL[verdict]
+  return key ? t(key) : verdict
+}
 
-/**
- * The console's front page.
- *
- * Two columns that scroll independently: the numbers on the left, the day's
- * work on the right. Both fill the shell's height rather than growing it, so
- * the chart and the rail are visible together on a laptop instead of the rail
- * being buried under a scroll.
- *
- * The sample control is real, not decorative — it is how many transcripts get
- * read, and every number on the screen is counted from exactly that set. It
- * lives in the URL because it is view state: a link to this screen carries the
- * sample with it, and Back steps through the sizes you looked at.
- */
+function statusLabel(t: TFunction, status: string): string {
+  const key = STATUS_LABEL[status]
+  return key ? t(key) : status
+}
+
 export function DashboardPage() {
-  const dispatch = useAppDispatch()
-  const railOpen = useAppSelector(selectOpsRailOpen)
   const { t, fmt } = useTranslation()
+  const dispatch = useAppDispatch()
+  const { data, isLoading, isError, error, refetch } = useGetOverviewQuery({ limit: 15 })
 
-  const [searchParams, setSearchParams] = useSearchParams()
-  const sampleParam = searchParams.get('sample')
-  const sample: Sample = isSample(sampleParam) ? sampleParam : '12'
-
-  // Hiding a series is a view of the chart, not an addressable state — a link
-  // to "the dashboard with one series turned off" isn't a thing anyone wants.
-  const [hidden, setHidden] = useState<Record<string, boolean>>({})
-  const toggleSeries = (id: string): void => {
-    setHidden((current) => ({ ...current, [id]: !current[id] }))
+  if (isError) {
+    return (
+      <Page>
+        <PageHeader title={t('dashboard.title')} />
+        <ErrorState error={error} onRetry={() => void refetch()} />
+      </Page>
+    )
   }
 
-  const overview = useGetOverviewQuery({ sample: Number(sample) })
-  const data = overview.data
-
-  const sampleOptions = useMemo(
-    () =>
-      SAMPLES.map((value) => ({
-        value,
-        label: t('dashboard.sampleOption', { count: Number(value) }),
-      })),
-    [t],
-  )
-
-  const scope = data
-    ? t('dashboard.stat.messagesCaption', {
-        sampled: fmt.number(data.sampled),
-        total: fmt.number(data.conversations),
-      })
-    : undefined
-
-  const chartRows = (data?.rows ?? []).filter((row) => !row.unavailable).slice(0, 12)
+  const reviewed = data
+    ? Object.values(data.verdict_breakdown).reduce((total, count) => total + count, 0)
+    : 0
 
   return (
-    <div className="flex h-full min-h-0">
-      <div className="scroll-slim min-h-0 min-w-0 flex-1 overflow-y-auto px-5 pt-5 pb-12 lg:px-6">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-[17px] leading-none font-medium tracking-[-0.015em] text-body">
-              {t('dashboard.title')}
-            </h1>
-            {/* The one number that means "act now" sits next to the title, not
-                in a tile — it's a state, not a measure. */}
-            {data && data.empty > 0 ? (
-              <Link
-                to={paths.chat}
-                className="flex items-center gap-1.5 rounded-full border border-line px-2.25 py-0.75 text-[11px] text-muted transition-colors hover:border-line-strong hover:text-body"
-              >
-                <span aria-hidden="true" className="size-1.25 rounded-full bg-warning" />
-                {t('dashboard.emptyCount', { count: data.empty })}
-              </Link>
-            ) : null}
-            {data && data.active > 0 ? (
-              <span className="flex items-center gap-1.5 rounded-full border border-line px-2.25 py-0.75 text-[11px] text-muted">
-                <span aria-hidden="true" className="size-1.25 rounded-full bg-brand" />
-                {t('dashboard.activeCount', { count: data.active })}
-              </span>
-            ) : null}
-          </div>
+    <Page>
+      <PageHeader
+        title={t('dashboard.title')}
+        description={t('dashboard.description')}
+        actions={
+          // A drawer, not a destination: the overview stays where it is while
+          // the analysis runs beside it.
+          <Button onClick={() => dispatch(analysisDrawerToggled(true))}>
+            {t('dashboard.newAnalysis')}
+          </Button>
+        }
+      />
 
-          <div className="flex items-center gap-2">
-            <SelectChip
-              label={t('dashboard.sampleSize')}
-              icon="list"
-              value={sample}
-              options={sampleOptions}
-              onChange={(value) => {
-                setSearchParams(
-                  (current) => {
-                    const next = new URLSearchParams(current)
-                    next.set('sample', value)
-                    return next
-                  },
-                  { replace: true },
-                )
-              }}
-            />
-            {railOpen ? null : (
-              <button
-                type="button"
-                onClick={() => dispatch(opsRailToggled(true))}
-                className="hidden h-8.5 items-center gap-1.75 rounded-[9px] border border-line-soft bg-surface px-2.5 text-[12px] text-mid transition-colors hover:border-line-strong hover:bg-canvas xl:flex"
-              >
-                <Icon name="panel" className="size-3.25" strokeWidth={1.7} />
-                {t('dashboard.showPanel')}
-              </button>
-            )}
-          </div>
+      {isLoading || !data ? (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {Array.from({ length: 8 }, (_, index) => (
+            <Skeleton key={index} className="h-24 rounded-md" />
+          ))}
         </div>
+      ) : (
+        <div className="flex flex-col gap-5">
+          {/* The redaction gate firing is a signal, not a statistic. If it is
+              catching submissions, either the detector is missing patterns or
+              operators are clicking through the review — both need a person. */}
+          {data.blocked_count > 0 ? (
+            <Alert tone="warning">
+              {t('dashboard.blockedWarning', { count: String(data.blocked_count) })}
+            </Alert>
+          ) : null}
 
-        {overview.error ? (
-          <Card>
-            <ErrorState error={overview.error} onRetry={() => void overview.refetch()} />
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5">
+          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <StatCard
-              label={t('dashboard.stat.conversations')}
-              icon="chat"
-              isLoading={overview.isLoading}
-              value={data ? fmt.number(data.conversations) : '—'}
-              caption={
-                data?.partial
-                  ? t('dashboard.stat.conversationsCaptionPartial', {
-                      count: fmt.number(data.sampled),
-                    })
-                  : t('dashboard.stat.conversationsCaptionAll')
+              label={t('dashboard.totalAnalyses')}
+              value={String(data.total_analyses)}
+              hint={t('dashboard.lastSevenDays', { count: String(data.analyses_last_7_days) })}
+              icon="document"
+            />
+            <StatCard
+              label={t('dashboard.patients')}
+              value={String(data.distinct_patients)}
+              icon="users"
+            />
+            <StatCard
+              label={t('dashboard.successRate')}
+              value={percent(data.success_rate)}
+              hint={t('dashboard.successHint')}
+              icon="check"
+            />
+            <StatCard
+              label={t('dashboard.medianLatency')}
+              value={`${(data.median_latency_ms / 1000).toFixed(1)}s`}
+              hint={t('dashboard.latencyHint')}
+              icon="clock"
+            />
+          </section>
+
+          {/* The quality row. `accuracy` is the only number here that says
+              whether the agent is any good, and it is meaningless without
+              `review` beside it — 100% accuracy over two reviewed runs is not
+              a result, so the two are shown together. */}
+          <section className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+            <StatCard
+              label={t('dashboard.accuracy')}
+              value={reviewed > 0 ? percent(data.accuracy_rate) : '—'}
+              hint={
+                reviewed > 0
+                  ? t('dashboard.accuracyHint', { count: String(reviewed) })
+                  : t('dashboard.accuracyEmpty')
               }
-              action={{ to: paths.chat, label: t('dashboard.stat.openConversations') }}
-            />
-            <StatCard
-              label={t('dashboard.stat.messages')}
-              icon="message"
-              isLoading={overview.isLoading}
-              value={data ? fmt.number(data.messages) : '—'}
-              {...(scope ? { caption: scope } : {})}
-              action={{ to: paths.chat, label: t('dashboard.stat.readThreads') }}
-            />
-            <StatCard
-              label={t('dashboard.stat.asked')}
-              icon="user"
-              isLoading={overview.isLoading}
-              value={data ? fmt.number(data.userMessages) : '—'}
-              caption={t('dashboard.stat.askedCaption')}
-              action={{ to: paths.chat, label: t('dashboard.stat.openConversations') }}
-            />
-            <StatCard
-              label={t('dashboard.stat.answered')}
               icon="spark"
-              isLoading={overview.isLoading}
-              value={data ? fmt.number(data.assistantMessages) : '—'}
-              caption={t('dashboard.stat.answeredCaption')}
-              action={{ to: paths.chat, label: t('dashboard.stat.openConversations') }}
             />
             <StatCard
-              label={t('dashboard.stat.average')}
-              icon="chart"
-              isLoading={overview.isLoading}
-              value={data ? fmt.decimal(data.averageMessages) : '—'}
-              caption={t('dashboard.stat.averageCaption')}
-              action={{ to: paths.chat, label: t('dashboard.stat.openConversations') }}
+              label={t('dashboard.reviewRate')}
+              value={percent(data.review_rate)}
+              hint={t('dashboard.reviewHint')}
+              icon="pencil"
             />
-          </div>
-        )}
+            <StatCard
+              label={t('dashboard.blocked')}
+              value={String(data.blocked_count)}
+              hint={t('dashboard.blockedHint')}
+              icon="shield"
+              tone={data.blocked_count > 0 ? 'critical' : 'default'}
+            />
+          </section>
 
-        <Card className="mt-3 pt-4 pb-2.5">
-          <div className="mb-1 flex flex-wrap items-center justify-between gap-3 px-4.5">
-            <div className="flex items-center gap-3.5">
-              <h2 className="text-[13.5px] font-medium text-body">{t('dashboard.chart.title')}</h2>
-              <SeriesLegend
-                series={[
-                  {
-                    id: 'asked',
-                    name: t('dashboard.stat.asked'),
-                    mark: 'line',
-                    visible: !hidden['asked'],
-                  },
-                  {
-                    id: 'answered',
-                    name: t('dashboard.stat.answered'),
-                    mark: 'bar',
-                    visible: !hidden['answered'],
-                  },
-                ]}
-                onToggle={toggleSeries}
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_18rem]">
+            <Card>
+              <CardHeader
+                title={t('dashboard.recent')}
+                description={t('dashboard.recentHint')}
+                action={<CardLink to={paths.policies}>{t('common.viewAll')}</CardLink>}
               />
-            </div>
-            <CardLink to={paths.chat}>{t('dashboard.stat.openConversations')}</CardLink>
-          </div>
 
-          <div className="px-1.5">
-            {overview.error ? (
-              <ErrorState error={overview.error} onRetry={() => void overview.refetch()} />
-            ) : overview.isLoading ? (
-              <Skeleton className="mx-3 h-60 w-[calc(100%-1.5rem)]" />
-            ) : chartRows.length === 0 ? (
-              <p className="py-20 text-center text-[11.5px] text-muted">
-                {t('dashboard.chart.empty')}
-              </p>
-            ) : (
-              <Suspense fallback={<Skeleton className="mx-3 h-60 w-[calc(100%-1.5rem)]" />}>
-                <VolumeChart
-                  data={chartRows}
-                  showAsked={!hidden['asked']}
-                  showAnswered={!hidden['answered']}
+              {data.recent.length === 0 ? (
+                <EmptyState
+                  title={t('dashboard.emptyTitle')}
+                  description={t('dashboard.emptyDescription')}
                 />
-              </Suspense>
-            )}
+              ) : (
+                <ul className="divide-y divide-line-soft">
+                  {data.recent.map((run) => (
+                    <li key={run.id}>
+                      {/* Every row on this list is a stored analysis, so every
+                          row opens it. */}
+                      <Link
+                        to={paths.policy(run.id)}
+                        className="flex items-center justify-between gap-4 px-4.5 py-2.5 transition-colors hover:bg-surface-sunk"
+                      >
+                      <div className="flex min-w-0 flex-col gap-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="truncate text-[12.5px] font-medium text-body">
+                            {run.aseguradora ?? t('dashboard.unknownInsurer')}
+                          </span>
+                          {run.hallazgos_criticos > 0 ? (
+                            <Badge tone="critical">
+                              {t('dashboard.criticalFindings', {
+                                count: String(run.hallazgos_criticos),
+                              })}
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <span className="truncate text-[11px] text-faint">
+                          {t('dashboard.patientLabel', { id: run.patient_id })} ·{' '}
+                          {fmt.relative(run.created_at)}
+                        </span>
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-2">
+                        {run.verdict ? (
+                          <Badge
+                            tone={
+                              VERDICT_TONE[run.verdict as keyof typeof VERDICT_TONE] ?? 'neutral'
+                            }
+                          >
+                            {verdictLabel(t, run.verdict)}
+                          </Badge>
+                        ) : (
+                          <Badge tone="neutral">{t('dashboard.awaitingReview')}</Badge>
+                        )}
+                        <span
+                          className={cn(
+                            'w-12 text-right text-[11px] tabular-nums',
+                            run.status === 'succeeded' ? 'text-faint' : 'text-critical',
+                          )}
+                        >
+                          {run.status === 'succeeded'
+                            ? `${(run.latency_ms / 1000).toFixed(1)}s`
+                            : statusLabel(t, run.status)}
+                        </span>
+                      </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+
+            <Card>
+              <CardHeader
+                title={t('dashboard.redactionTitle')}
+                description={t('dashboard.redactionHint')}
+              />
+
+              {Object.keys(data.redaction_totals).length === 0 ? (
+                <p className="px-4.5 pb-4 text-[11.5px] text-faint">{t('dashboard.noRedactions')}</p>
+              ) : (
+                <ul className="flex flex-col gap-1.5 px-4.5 pb-4">
+                  {Object.entries(data.redaction_totals)
+                    .sort(([, left], [, right]) => right - left)
+                    .slice(0, 12)
+                    .map(([category, count]) => (
+                      <li
+                        key={category}
+                        className="flex items-baseline justify-between gap-3 text-[11.5px]"
+                      >
+                        <span className="truncate font-mono text-muted">{category}</span>
+                        <span className="shrink-0 text-body tabular-nums">{count}</span>
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </Card>
           </div>
-        </Card>
-
-        <Card className="mt-3 overflow-hidden">
-          <div className="flex items-center justify-between gap-3 px-4.5 pt-3.5 pb-3">
-            <h2 className="text-[13.5px] font-medium text-body">{t('dashboard.busiest')}</h2>
-            <CardLink to={paths.chat}>{t('common.viewAll')}</CardLink>
-          </div>
-
-          {overview.error ? null : (
-            <RecentConversations
-              rows={data?.rows.slice(0, 6)}
-              isLoading={overview.isLoading}
-            />
-          )}
-        </Card>
-      </div>
-
-      {/*
-       * Below xl there isn't room for a second column, so the rail drops out
-       * entirely rather than squeezing the chart — everything in it is reachable
-       * from the screens it links to.
-       */}
-      {railOpen ? (
-        <div className="hidden h-full shrink-0 xl:block">
-          <OpsRail overview={data} isLoading={overview.isLoading} />
         </div>
-      ) : null}
-    </div>
+      )}
+    </Page>
   )
 }
 

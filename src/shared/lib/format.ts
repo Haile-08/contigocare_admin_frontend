@@ -97,3 +97,26 @@ export function initials(name: string | null | undefined, email?: string | null)
 export function truncate(value: string, max: number): string {
   return value.length <= max ? value : `${value.slice(0, Math.max(0, max - 1)).trimEnd()}…`
 }
+
+const BYTE_UNITS = ['B', 'KB', 'MB', 'GB'] as const
+
+/**
+ * A file size, for upload limits and rejections.
+ *
+ * Locale-independent: `MB` is `MB` in both languages the console speaks, and
+ * the only place this appears is next to a number the operator is comparing
+ * against their file manager — which is showing them the same binary units.
+ */
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} ${BYTE_UNITS[0]}`
+
+  let value = bytes
+  let unit = 0
+
+  while (value >= 1024 && unit < BYTE_UNITS.length - 1) {
+    value /= 1024
+    unit += 1
+  }
+
+  return `${value % 1 === 0 ? value : value.toFixed(1)} ${BYTE_UNITS[unit]}`
+}

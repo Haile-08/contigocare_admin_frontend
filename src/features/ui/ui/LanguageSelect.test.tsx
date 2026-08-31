@@ -14,7 +14,7 @@ function Screen() {
   return (
     <>
       <LanguageSelect />
-      <p>{t('sessions.title')}</p>
+      <p>{t('analysis.title')}</p>
       <p data-testid="count">{fmt.number(12_345)}</p>
       {/* Spanish groups only from five digits up (CLDR minimumGroupingDigits),
           so a four-digit count is bare — which is the point of asking `Intl`
@@ -38,12 +38,12 @@ describe('LanguageSelect', () => {
     const user = userEvent.setup()
     const { store } = renderWithProviders(<Screen />)
 
-    expect(screen.getByText('Conversations')).toBeInTheDocument()
+    expect(screen.getByText('Policy analysis')).toBeInTheDocument()
 
     await user.selectOptions(screen.getByRole('combobox', { name: 'Language' }), 'es')
 
     expect(store.getState().ui.locale).toBe('es')
-    expect(screen.getByText('Conversaciones')).toBeInTheDocument()
+    expect(screen.getByText('Análisis de pólizas')).toBeInTheDocument()
     // The chip's own label is now Spanish too.
     expect(screen.getByRole('combobox', { name: 'Idioma' })).toBeInTheDocument()
   })

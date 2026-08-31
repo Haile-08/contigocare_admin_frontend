@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import { cn } from '@/shared/lib/cn'
 
-type AlertTone = 'error' | 'info' | 'success'
+type AlertTone = 'error' | 'warning' | 'info' | 'success'
 
 export interface AlertProps {
   tone?: AlertTone
@@ -14,6 +14,10 @@ export interface AlertProps {
 /** Tinted, borderless — the same treatment as a status badge, one size up. */
 const TONES: Record<AlertTone, string> = {
   error: 'bg-critical-soft text-critical',
+  // Distinct from `error`: the redaction screen needs to say "check this"
+  // without saying "this failed", and collapsing the two into one red box
+  // teaches operators to dismiss both.
+  warning: 'bg-warning-soft text-warning',
   info: 'bg-surface-sunk text-mid',
   success: 'bg-positive-soft text-positive',
 }

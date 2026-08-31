@@ -10,9 +10,14 @@ import { cn } from '@/shared/lib/cn'
  */
 const ICONS = {
   grid: 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',
-  chat: 'M21 12a8 8 0 0 1-8 8H8l-5 3 1.2-4.2A8 8 0 0 1 13 4a8 8 0 0 1 8 8z',
-  message: 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z',
   list: 'M4 6h16M4 12h16M4 18h9',
+  // A sheet with a folded corner: the analysis screen's subject is a document,
+  // and a generic file glyph reads as "attachment" instead.
+  document: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4',
+  upload: 'M12 16V4M8 8l4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3',
+  // The redaction affordance. A shield rather than a lock: the operator is
+  // removing something to protect it, not sealing it away.
+  shield: 'M12 21s7-3.5 7-9V6l-7-3-7 3v6c0 5.5 7 9 7 9z',
   users: 'M16 20v-1.5a3.5 3.5 0 0 0-3.5-3.5h-5A3.5 3.5 0 0 0 4 18.5V20M10 11.5a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5M20 20v-1.5a3.5 3.5 0 0 0-2.6-3.38M15.5 4.24a3.75 3.75 0 0 1 0 7.02',
   user: 'M19 21v-1.5a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4V21M12 11.5a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5',
   chart: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
@@ -38,6 +43,12 @@ const ICONS = {
   // A meridian and the equator, not a full graticule: at 13 px anything denser
   // fills in solid.
   globe: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18',
+  // An open envelope flap rather than a closed rectangle: the sealed version is
+  // indistinguishable from `document` at the sizes this is drawn at.
+  mail: 'M3 6h18v12H3zM3 7l9 6 9-6',
+  // A key, for the password reset screen. Bit toward the bottom right so it
+  // reads at 20 px without the teeth merging into the shaft.
+  key: 'M15.5 3a5.5 5.5 0 1 0-4.1 9.17L10 13.5H8v2H6v2H3v-3l7.4-7.4A5.5 5.5 0 0 0 15.5 3zM16.5 7h.01',
 } as const
 
 export type IconName = keyof typeof ICONS

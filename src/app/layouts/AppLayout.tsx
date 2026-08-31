@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
+import { AnalysisDrawer } from '@/features/analysis/ui/AnalysisDrawer'
 import { mobileNavToggled, selectMobileNavOpen } from '@/features/ui/model/uiSlice'
 import { useTranslation } from '@/shared/i18n'
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary'
@@ -33,6 +34,9 @@ function RouteFallback() {
  *    interactive, so the user can always navigate away.
  *  - The boundary is keyed on the pathname, so navigating away from a crashed
  *    screen resets it instead of leaving the error stuck on the next page.
+ *
+ * The analysis drawer is mounted here, outside `<Outlet/>`, because it is not a
+ * screen: it opens over whichever one is showing and leaves it intact.
  */
 export function AppLayout() {
   const dispatch = useAppDispatch()
@@ -72,6 +76,8 @@ export function AppLayout() {
           </ErrorBoundary>
         </main>
       </div>
+
+      <AnalysisDrawer />
     </div>
   )
 }

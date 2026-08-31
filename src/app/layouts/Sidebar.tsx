@@ -15,6 +15,10 @@ import { Icon } from '@/shared/ui/Icon'
  * Collapsed, the rail is 60 px of icons only, so `title` carries the label the
  * eye no longer gets. Groups are separated by a rule rather than a heading —
  * a handful of destinations don't need headings.
+ *
+ * The rail is destinations only. Starting an analysis is an action, not a
+ * place, so it lives on the screens where it belongs — the dashboard and the
+ * policy list — and opens the wizard in a drawer from there.
  */
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const collapsed = useAppSelector(selectSidebarCollapsed)

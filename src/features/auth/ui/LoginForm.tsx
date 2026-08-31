@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
+import { useAppDispatch } from '@/app/store/hooks'
 import { normalizeApiError } from '@/shared/api/errors'
 import { useTranslation } from '@/shared/i18n'
 import { fieldErrorsFromZod } from '@/shared/lib/formErrors'
@@ -9,6 +10,7 @@ import { Button } from '@/shared/ui/Button'
 import { Input } from '@/shared/ui/Field'
 
 import { useLoginMutation } from '../api/authApi'
+import { stageChanged } from '../model/authSlice'
 import { createLoginSchema } from '../model/validation'
 import { PasswordInput } from './PasswordInput'
 
@@ -19,6 +21,7 @@ import { PasswordInput } from './PasswordInput'
  */
 export function LoginForm() {
   const { t } = useTranslation()
+  const dispatch = useAppDispatch()
   const [login, { isLoading }] = useLoginMutation()
   const [values, setValues] = useState({ email: '', password: '' })
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
@@ -85,9 +88,21 @@ export function LoginForm() {
           belongs next to the form that produced it. */}
       {formError ? <Alert tone="error">{formError}</Alert> : null}
 
-      <Button type="submit" isLoading={isLoading} className="h-12 w-full text-[13px]">
-        {t('login.submit')}
-      </Button>
+      <div className="flex flex-col gap-3.5">
+        <Button type="submit" isLoading={isLoading} className="h-12 w-full text-[13px]">
+          {t('login.submit')}
+        </Button>
+
+        {/* A stage change, not a link: the reset request happens on this screen
+            and comes back to it, so there is no URL worth minting for it. */}
+        <button
+          type="button"
+          onClick={() => dispatch(stageChanged('forgot'))}
+          className="text-[12.5px] text-muted underline-offset-4 transition-colors hover:text-body hover:underline"
+        >
+          {t('forgot.link')}
+        </button>
+      </div>
     </form>
   )
 }

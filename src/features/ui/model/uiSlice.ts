@@ -17,6 +17,14 @@ export interface UiState {
   mobileNavOpen: boolean
   /** The dashboard's right-hand ops rail. Chrome, like the rail, so it persists. */
   opsRailOpen: boolean
+  /**
+   * The analysis drawer, opened from the rail.
+   *
+   * Not persisted, unlike the rail and the ops rail. Those are preferences;
+   * this is a piece of work in progress, and restoring it on the next load
+   * would reopen an empty wizard over whatever screen the operator asked for.
+   */
+  analysisDrawerOpen: boolean
 }
 
 const themeStorage = createStorage<Theme | null>(STORAGE_KEYS.theme, null)
@@ -59,6 +67,7 @@ const initialState: UiState = {
   sidebarCollapsed: sidebarStorage.read() === true,
   mobileNavOpen: false,
   opsRailOpen: opsRailStorage.read() !== false,
+  analysisDrawerOpen: false,
 }
 
 export const uiSlice = createSlice({
@@ -81,6 +90,9 @@ export const uiSlice = createSlice({
     opsRailToggled: (state, action: PayloadAction<boolean | undefined>) => {
       state.opsRailOpen = action.payload ?? !state.opsRailOpen
     },
+    analysisDrawerToggled: (state, action: PayloadAction<boolean | undefined>) => {
+      state.analysisDrawerOpen = action.payload ?? !state.analysisDrawerOpen
+    },
   },
   selectors: {
     selectTheme: (state) => state.theme,
@@ -88,6 +100,7 @@ export const uiSlice = createSlice({
     selectSidebarCollapsed: (state) => state.sidebarCollapsed,
     selectMobileNavOpen: (state) => state.mobileNavOpen,
     selectOpsRailOpen: (state) => state.opsRailOpen,
+    selectAnalysisDrawerOpen: (state) => state.analysisDrawerOpen,
   },
 })
 
@@ -97,6 +110,7 @@ export const {
   sidebarToggled,
   mobileNavToggled,
   opsRailToggled,
+  analysisDrawerToggled,
 } = uiSlice.actions
 
 export const {
@@ -105,6 +119,7 @@ export const {
   selectSidebarCollapsed,
   selectMobileNavOpen,
   selectOpsRailOpen,
+  selectAnalysisDrawerOpen,
 } = uiSlice.selectors
 
 export const uiPersistence = { themeStorage, localeStorage, sidebarStorage, opsRailStorage }

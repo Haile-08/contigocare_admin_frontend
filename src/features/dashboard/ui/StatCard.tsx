@@ -1,67 +1,46 @@
-import { Link } from 'react-router-dom'
+import type { ReactNode } from 'react'
 
 import { cn } from '@/shared/lib/cn'
-import { Icon, type IconName } from '@/shared/ui/Icon'
-import { Skeleton } from '@/shared/ui/Skeleton'
+import { Icon } from '@/shared/ui/Icon'
+import type { IconName } from '@/shared/ui/Icon'
 
-/**
- * KPI tile.
- *
- * Two things carry the design here. The number is the largest thing on the
- * screen and set light — 30 px at weight 400 — because size, not weight, is
- * what makes a figure read first. And every tile ends in a footer strip that
- * links to the screen the number came from, so a KPI is a way into the data
- * rather than a dead end.
- */
-export function StatCard({
-  label,
-  value,
-  icon,
-  caption,
-  action,
-  isLoading = false,
-}: {
+interface StatCardProps {
   label: string
   value: string
-  icon: IconName
-  /** What the number is measured over — the sample, the period, the scope. */
-  caption?: string
-  action?: { to: string; label: string }
-  isLoading?: boolean
-}) {
+  hint?: string
+  icon?: IconName
+  /** Draws attention when the figure is one that should not be rising. */
+  tone?: 'default' | 'critical'
+  children?: ReactNode
+}
+
+/**
+ * One figure, stated plainly.
+ *
+ * No sparkline and no percentage-change chip. Both are the default decoration
+ * on a stat tile and both are noise here: this console has one operator making
+ * one decision at a time, and a delta against last week does not change what
+ * they do next.
+ */
+export function StatCard({ label, value, hint, icon, tone = 'default', children }: StatCardProps) {
   return (
-    <div className="flex flex-col rounded-md border border-line bg-surface transition-colors hover:border-line-strong">
-      <div className="flex-1 px-3.75 pt-3.5 pb-3.25">
-        <div className="flex items-start justify-between gap-2">
-          <span className="text-[12px] text-muted">{label}</span>
-          <Icon name={icon} className="size-3.75 text-faint" />
-        </div>
-
-        <div className="mt-2.5 flex items-baseline gap-2">
-          {isLoading ? (
-            <Skeleton className="h-7.5 w-24" />
-          ) : (
-            <span className="tnum text-[30px] leading-none font-normal tracking-[-0.03em] text-body">
-              {value}
-            </span>
-          )}
-        </div>
-
-        {caption ? <p className="mt-2 text-[11px] text-faint">{caption}</p> : null}
+    <div className="flex flex-col gap-2 rounded-md border border-line bg-surface p-4">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[11px] tracking-wide text-muted">{label}</span>
+        {icon ? <Icon name={icon} className="size-3.5 text-faint" /> : null}
       </div>
 
-      {action ? (
-        <Link
-          to={action.to}
-          className={cn(
-            'flex items-center justify-between border-t border-line-faint px-3.75 py-2.5',
-            'text-[11.5px] text-muted transition-colors hover:bg-canvas hover:text-body',
-          )}
-        >
-          {action.label}
-          <Icon name="arrowRight" className="size-3.25" strokeWidth={1.7} />
-        </Link>
-      ) : null}
+      <span
+        className={cn(
+          'text-[26px] leading-none font-normal tracking-[-0.02em] tabular-nums',
+          tone === 'critical' ? 'text-critical' : 'text-body',
+        )}
+      >
+        {value}
+      </span>
+
+      {hint ? <span className="text-[10.5px] text-faint">{hint}</span> : null}
+      {children}
     </div>
   )
 }

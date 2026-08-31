@@ -19,7 +19,7 @@ export interface NavGroup {
 /**
  * The sidebar is data, not JSX.
  *
- * Adding a section means adding an entry here. The icon is a name from the
+ * Two entries, and that is the whole console. The icon is a name from the
  * shared registry rather than inline SVG, so the rail can't acquire a glyph
  * drawn at a different weight from the rest of the app — and the label is a key
  * from the dictionary rather than a string, so it can't acquire English either.
@@ -31,6 +31,6 @@ export const NAVIGATION: NavGroup[] = [
   },
   {
     labelKey: 'nav.work',
-    items: [{ to: paths.chat, labelKey: 'nav.conversations', icon: 'chat' }],
+    items: [{ to: paths.policies, labelKey: 'nav.policies', icon: 'document' }],
   },
 ]

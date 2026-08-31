@@ -2,7 +2,6 @@ import { configureStore } from '@reduxjs/toolkit'
 import { setupListeners } from '@reduxjs/toolkit/query'
 
 import { registerAuthListeners } from '@/features/auth/model/authListeners'
-import { loadPreloadedAuthState } from '@/features/auth/model/preloadedState'
 import { registerUiListeners } from '@/features/ui/model/uiListeners'
 import { baseApi } from '@/shared/api/baseApi'
 import { env } from '@/shared/config/env'
@@ -14,6 +13,10 @@ import type { RootState } from './types'
 /**
  * Builds a store. Exported as a factory so tests (and any future SSR entry)
  * can create a fresh, fully wired store instead of reaching for the singleton.
+ *
+ * There is no preloaded auth state any more. Credentials are no longer written
+ * to browser storage, so there is nothing to rehydrate — the session is
+ * re-established from the HttpOnly refresh cookie by `App` on mount.
  */
 export function makeStore(preloadedState?: Partial<RootState>) {
   const listener = createAppListenerMiddleware()
@@ -39,7 +42,7 @@ export function makeStore(preloadedState?: Partial<RootState>) {
   return store
 }
 
-export const store = makeStore(loadPreloadedAuthState())
+export const store = makeStore()
 
 export type AppStore = ReturnType<typeof makeStore>
 export type { AppDispatch, RootState } from './types'

@@ -5,30 +5,21 @@ import { unauthorizedDetected } from '@/shared/api/authEvents'
 import { baseApi } from '@/shared/api/baseApi'
 import { logger } from '@/shared/lib/logger'
 
-import { clearCredentials, saveCredentials } from '../lib/tokenStorage'
-import { credentialsReceived, loggedOut } from './authSlice'
+import { loggedOut } from './authSlice'
 
 /**
- * Keeps persisted credentials in step with the store, and — critically —
- * wipes the API cache whenever a session ends. Without the reset, cached
- * messages and session names from the previous account would still be in
- * memory for the next person to sign in on this tab.
+ * Wipes the API cache whenever a session ends.
+ *
+ * Nothing is persisted any more, so there is no storage to keep in step — but
+ * the cache reset matters more here than it did before. RTK Query holds the
+ * last analysis in memory, and an analysis is policy content. Without the
+ * reset, the next person to sign in on this machine would find the previous
+ * operator's results already rendered.
  */
 export function registerAuthListeners(startListening: AppStartListening): void {
   startListening({
-    actionCreator: credentialsReceived,
-    effect: (action) => {
-      saveCredentials(action.payload)
-    },
-  })
-
-  startListening({
     matcher: isAnyOf(loggedOut, unauthorizedDetected),
-    effect: (action, listenerApi) => {
-      // A rejected *session* token does not end the user's sign-in.
-      if (unauthorizedDetected.match(action) && action.payload.scope !== 'user') return
-
-      clearCredentials()
+    effect: (_action, listenerApi) => {
       listenerApi.dispatch(baseApi.util.resetApiState())
       logger.debug('signed out; api cache cleared')
     },
