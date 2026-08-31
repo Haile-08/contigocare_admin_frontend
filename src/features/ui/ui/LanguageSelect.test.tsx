@@ -38,26 +38,27 @@ describe('LanguageSelect', () => {
     const user = userEvent.setup()
     const { store } = renderWithProviders(<Screen />)
 
-    expect(screen.getByText('Policy analysis')).toBeInTheDocument()
-
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Language' }), 'es')
-
-    expect(store.getState().ui.locale).toBe('es')
+    // Spanish is the default, so the switch under test is the one to English.
     expect(screen.getByText('Análisis de pólizas')).toBeInTheDocument()
-    // The chip's own label is now Spanish too.
-    expect(screen.getByRole('combobox', { name: 'Idioma' })).toBeInTheDocument()
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma' }), 'en')
+
+    expect(store.getState().ui.locale).toBe('en')
+    expect(screen.getByText('Policy analysis')).toBeInTheDocument()
+    // The chip's own label is now English too.
+    expect(screen.getByRole('combobox', { name: 'Language' })).toBeInTheDocument()
   })
 
   it('switches number formatting with the language', async () => {
     const user = userEvent.setup()
     renderWithProviders(<Screen />)
 
-    expect(screen.getByTestId('count')).toHaveTextContent('12,345')
-    expect(screen.getByTestId('small-count')).toHaveTextContent('1,234')
-
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Language' }), 'es')
-
     expect(screen.getByTestId('count')).toHaveTextContent('12.345')
     expect(screen.getByTestId('small-count')).toHaveTextContent('1234')
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Idioma' }), 'en')
+
+    expect(screen.getByTestId('count')).toHaveTextContent('12,345')
+    expect(screen.getByTestId('small-count')).toHaveTextContent('1,234')
   })
 })

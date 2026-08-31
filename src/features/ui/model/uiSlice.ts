@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
-import { DEFAULT_LOCALE, LOCALES, isLocale } from '@/shared/i18n'
+import { DEFAULT_LOCALE, isLocale } from '@/shared/i18n'
 import type { Locale } from '@/shared/i18n'
 import { STORAGE_KEYS, createStorage } from '@/shared/lib/storage'
 
@@ -33,32 +33,24 @@ const sidebarStorage = createStorage<boolean>(STORAGE_KEYS.sidebar, false)
 const opsRailStorage = createStorage<boolean>(STORAGE_KEYS.opsRail, true)
 
 /**
- * Light is the console's default — it is the mode the design is drawn in, so a
- * first-time user sees it regardless of their OS setting. Dark is reachable
+ * Dark is the console's default — it is the mode the design is drawn in, so a
+ * first-time user sees it regardless of their OS setting. Light is reachable
  * from the topbar toggle, and once chosen it is what's honoured from then on.
  */
 function preferredTheme(): Theme {
   const stored = themeStorage.read()
-  return stored === 'dark' || stored === 'light' ? stored : 'light'
+  return stored === 'dark' || stored === 'light' ? stored : 'dark'
 }
 
 /**
- * Language, unlike theme, *does* follow the browser on a first visit: someone
- * whose machine is set to Spanish is far more likely to want Spanish than to
- * want our default, and the cost of guessing wrong is one click in the topbar.
- * An explicit choice, once made, always wins.
+ * Spanish is the console's default, like the theme: the operators are in
+ * Mexico, so the browser's language is a worse guess than ours and is not
+ * consulted. English is one click away in the topbar, and an explicit choice,
+ * once made, always wins.
  */
 function preferredLocale(): Locale {
   const stored = localeStorage.read()
-  if (isLocale(stored)) return stored
-
-  for (const tag of globalThis.navigator?.languages ?? []) {
-    const base = tag.toLowerCase().split('-')[0]
-    const match = LOCALES.find((locale) => locale === base)
-    if (match) return match
-  }
-
-  return DEFAULT_LOCALE
+  return isLocale(stored) ? stored : DEFAULT_LOCALE
 }
 
 const initialState: UiState = {

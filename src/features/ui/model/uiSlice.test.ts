@@ -7,20 +7,20 @@ import { analysisDrawerToggled, localeChanged, themeToggled, uiSlice } from './u
 const reduce = uiSlice.reducer
 
 describe('uiSlice — theme', () => {
-  it('starts light, so a first-time user sees the mode the design is drawn in', () => {
-    expect(reduce(undefined, { type: '@@INIT' }).theme).toBe('light')
+  it('starts dark, so a first-time user sees the mode the design is drawn in', () => {
+    expect(reduce(undefined, { type: '@@INIT' }).theme).toBe('dark')
   })
 
   it('toggles between the two modes', () => {
-    const dark = reduce(undefined, themeToggled())
-    expect(dark.theme).toBe('dark')
-    expect(reduce(dark, themeToggled()).theme).toBe('light')
+    const light = reduce(undefined, themeToggled())
+    expect(light.theme).toBe('light')
+    expect(reduce(light, themeToggled()).theme).toBe('dark')
   })
 })
 
 describe('uiSlice — locale', () => {
-  it('starts English when the browser gives no better hint', () => {
-    expect(reduce(undefined, { type: '@@INIT' }).locale).toBe('en')
+  it('starts Spanish, whatever the browser is set to', () => {
+    expect(reduce(undefined, { type: '@@INIT' }).locale).toBe('es')
   })
 
   it('sets the language explicitly rather than cycling', () => {

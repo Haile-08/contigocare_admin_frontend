@@ -2,19 +2,12 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import type { UiState } from '@/features/ui/model/uiSlice'
-import { renderWithProviders } from '@/test/renderWithProviders'
+import { renderWithProviders, uiStateWith } from '@/test/renderWithProviders'
 
 import { LoginForm } from './LoginForm'
 
-const spanishUi: UiState = {
-  theme: 'light',
-  locale: 'es',
-  sidebarCollapsed: false,
-  mobileNavOpen: false,
-  opsRailOpen: true,
-  analysisDrawerOpen: false,
-}
+/** Spanish is the default, so it is English that a test has to ask for. */
+const englishUi = uiStateWith({ locale: 'en' })
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -28,7 +21,7 @@ describe('LoginForm', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
     const user = userEvent.setup()
 
-    renderWithProviders(<LoginForm />)
+    renderWithProviders(<LoginForm />, { preloadedState: { ui: englishUi } })
 
     await user.type(screen.getByLabelText('Email'), 'not-an-email')
     await user.type(screen.getByLabelText('Password'), 'Secret123!')
@@ -44,7 +37,7 @@ describe('LoginForm', () => {
     )
 
     const user = userEvent.setup()
-    const { store } = renderWithProviders(<LoginForm />)
+    const { store } = renderWithProviders(<LoginForm />, { preloadedState: { ui: englishUi } })
 
     await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
     await user.type(screen.getByLabelText('Password'), 'WrongPass1!')
@@ -77,7 +70,7 @@ describe('LoginForm', () => {
     )
 
     const user = userEvent.setup()
-    const { store } = renderWithProviders(<LoginForm />)
+    const { store } = renderWithProviders(<LoginForm />, { preloadedState: { ui: englishUi } })
 
     await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
     await user.type(screen.getByLabelText('Password'), 'Secret123!')
@@ -102,7 +95,7 @@ describe('LoginForm', () => {
     )
 
     const user = userEvent.setup()
-    const { store } = renderWithProviders(<LoginForm />)
+    const { store } = renderWithProviders(<LoginForm />, { preloadedState: { ui: englishUi } })
 
     await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
     await user.type(screen.getByLabelText('Password'), 'Secret123!')
@@ -116,7 +109,7 @@ describe('LoginForm', () => {
   it('renders its labels and its validation in Spanish', async () => {
     const user = userEvent.setup()
 
-    renderWithProviders(<LoginForm />, { preloadedState: { ui: spanishUi } })
+    renderWithProviders(<LoginForm />)
 
     // The schema is built from `t`, so the message has to follow the labels.
     await user.type(screen.getByLabelText('Correo electrónico'), 'no-es-un-correo')
@@ -132,7 +125,7 @@ describe('LoginForm', () => {
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('network down'))
 
     const user = userEvent.setup()
-    renderWithProviders(<LoginForm />, { preloadedState: { ui: spanishUi } })
+    renderWithProviders(<LoginForm />)
 
     await user.type(screen.getByLabelText('Correo electrónico'), 'ops@contigo.care')
     await user.type(screen.getByLabelText('Contraseña'), 'Secreto123!')

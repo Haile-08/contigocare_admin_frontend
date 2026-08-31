@@ -11,7 +11,7 @@ export const LOCALES = ['en', 'es'] as const
 
 export type Locale = (typeof LOCALES)[number]
 
-export const DEFAULT_LOCALE: Locale = 'en'
+export const DEFAULT_LOCALE: Locale = 'es'
 
 /** What `Intl` and `<html lang>` want. */
 export const LOCALE_TAGS: Record<Locale, string> = {

@@ -16,10 +16,10 @@ describe('ui listeners', () => {
     const store = makeStore()
 
     store.dispatch(themeToggled())
-    expect(document.documentElement.dataset['theme']).toBe('dark')
+    expect(document.documentElement.dataset['theme']).toBe('light')
 
     store.dispatch(themeToggled())
-    expect(document.documentElement.dataset['theme']).toBe('light')
+    expect(document.documentElement.dataset['theme']).toBe('dark')
   })
 
   it('writes the BCP-47 tag onto <html lang>, not the short code', () => {
@@ -37,9 +37,9 @@ describe('ui listeners', () => {
     const store = makeStore()
 
     store.dispatch(themeToggled())
-    store.dispatch(localeChanged('es'))
+    store.dispatch(localeChanged('en'))
 
-    expect(globalThis.localStorage.getItem(STORAGE_KEYS.theme)).toBe('"dark"')
-    expect(globalThis.localStorage.getItem(STORAGE_KEYS.locale)).toBe('"es"')
+    expect(globalThis.localStorage.getItem(STORAGE_KEYS.theme)).toBe('"light"')
+    expect(globalThis.localStorage.getItem(STORAGE_KEYS.locale)).toBe('"en"')
   })
 })

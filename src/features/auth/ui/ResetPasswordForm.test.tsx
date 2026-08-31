@@ -2,9 +2,12 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { renderWithProviders } from '@/test/renderWithProviders'
+import { renderWithProviders, uiStateWith } from '@/test/renderWithProviders'
 
 import { ResetPasswordForm } from './ResetPasswordForm'
+
+/** Spanish is the default, so it is English that a test has to ask for. */
+const englishUi = uiStateWith({ locale: 'en' })
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -23,7 +26,9 @@ describe('ResetPasswordForm', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
     const user = userEvent.setup()
 
-    renderWithProviders(<ResetPasswordForm token="tok" onDone={vi.fn()} />)
+    renderWithProviders(<ResetPasswordForm token="tok" onDone={vi.fn()} />, {
+      preloadedState: { ui: englishUi },
+    })
 
     await user.type(screen.getByLabelText('New password'), 'short1')
     await user.type(screen.getByLabelText('Confirm new password'), 'short1')
@@ -37,7 +42,9 @@ describe('ResetPasswordForm', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
     const user = userEvent.setup()
 
-    renderWithProviders(<ResetPasswordForm token="tok" onDone={vi.fn()} />)
+    renderWithProviders(<ResetPasswordForm token="tok" onDone={vi.fn()} />, {
+      preloadedState: { ui: englishUi },
+    })
 
     await user.type(screen.getByLabelText('New password'), 'CorrectHorse42')
     await user.type(screen.getByLabelText('Confirm new password'), 'CorrectHorse43')
@@ -52,7 +59,9 @@ describe('ResetPasswordForm', () => {
     const onDone = vi.fn()
     const user = userEvent.setup()
 
-    renderWithProviders(<ResetPasswordForm token="link-token" onDone={onDone} />)
+    renderWithProviders(<ResetPasswordForm token="link-token" onDone={onDone} />, {
+      preloadedState: { ui: englishUi },
+    })
 
     await user.type(screen.getByLabelText('New password'), 'CorrectHorse42')
     await user.type(screen.getByLabelText('Confirm new password'), 'CorrectHorse42')
@@ -80,6 +89,7 @@ describe('ResetPasswordForm', () => {
     const user = userEvent.setup()
     const { store } = renderWithProviders(
       <ResetPasswordForm token="link-token" onDone={vi.fn()} />,
+      { preloadedState: { ui: englishUi } },
     )
 
     await user.type(screen.getByLabelText('New password'), 'CorrectHorse42')
@@ -103,7 +113,9 @@ describe('ResetPasswordForm', () => {
     const onDone = vi.fn()
     const user = userEvent.setup()
 
-    renderWithProviders(<ResetPasswordForm token="stale" onDone={onDone} />)
+    renderWithProviders(<ResetPasswordForm token="stale" onDone={onDone} />, {
+      preloadedState: { ui: englishUi },
+    })
 
     await user.type(screen.getByLabelText('New password'), 'CorrectHorse42')
     await user.type(screen.getByLabelText('Confirm new password'), 'CorrectHorse42')

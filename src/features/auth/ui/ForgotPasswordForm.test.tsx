@@ -2,9 +2,12 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 
-import { renderWithProviders } from '@/test/renderWithProviders'
+import { renderWithProviders, uiStateWith } from '@/test/renderWithProviders'
 
 import { ForgotPasswordForm } from './ForgotPasswordForm'
+
+/** Spanish is the default, so it is English that a test has to ask for. */
+const englishUi = uiStateWith({ locale: 'en' })
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -23,7 +26,7 @@ describe('ForgotPasswordForm', () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
     const user = userEvent.setup()
 
-    renderWithProviders(<ForgotPasswordForm />)
+    renderWithProviders(<ForgotPasswordForm />, { preloadedState: { ui: englishUi } })
 
     await user.type(screen.getByLabelText('Email'), 'not-an-email')
     await user.click(screen.getByRole('button', { name: 'Send the link' }))
@@ -44,7 +47,7 @@ describe('ForgotPasswordForm', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse(ACCEPTED, 202))
 
     const user = userEvent.setup()
-    renderWithProviders(<ForgotPasswordForm />)
+    renderWithProviders(<ForgotPasswordForm />, { preloadedState: { ui: englishUi } })
 
     await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
     await user.click(screen.getByRole('button', { name: 'Send the link' }))
@@ -62,7 +65,7 @@ describe('ForgotPasswordForm', () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(jsonResponse(ACCEPTED, 202))
 
     const user = userEvent.setup()
-    const { store } = renderWithProviders(<ForgotPasswordForm />)
+    const { store } = renderWithProviders(<ForgotPasswordForm />, { preloadedState: { ui: englishUi } })
 
     await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
     await user.click(screen.getByRole('button', { name: 'Send the link' }))
@@ -78,6 +81,7 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup()
     const { store } = renderWithProviders(<ForgotPasswordForm />, {
       preloadedState: {
+        ui: englishUi,
         auth: {
           admin: null,
           token: null,
@@ -105,7 +109,7 @@ describe('ForgotPasswordForm', () => {
     )
 
     const user = userEvent.setup()
-    renderWithProviders(<ForgotPasswordForm />)
+    renderWithProviders(<ForgotPasswordForm />, { preloadedState: { ui: englishUi } })
 
     await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
     await user.click(screen.getByRole('button', { name: 'Send the link' }))
