@@ -16,6 +16,7 @@ import type {
   Severidad,
 } from '../model/types'
 import { COBERTURA_FIELD_ORDER, POLIZA_FIELD_ORDER } from '../model/types'
+import { RunSummaryCard } from './RunSummaryCard'
 
 /**
  * Dynamic keys are built as explicit maps rather than template strings.
@@ -189,6 +190,10 @@ export function AnalysisView({ analysis, meta }: AnalysisViewProps) {
       {analysis.notas_calidad_documento ? (
         <Alert tone="warning">{analysis.notas_calidad_documento}</Alert>
       ) : null}
+
+      {/* Which patient, which insurer, which run — above the summary, because
+          the summary leaves the console and is worth little unattributed. */}
+      <RunSummaryCard analysis={analysis} meta={meta} />
 
       {/* Summary */}
       <Card>

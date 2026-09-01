@@ -288,6 +288,21 @@ export const en = {
   'analysis.provenance': '{model} · prompt {prompt} · {seconds}s · {tokens} tokens',
   'analysis.selfCritiqueApplied': 'self-review applied',
 
+  /* -------------------------------------------------------- run summary */
+
+  'runSummary.title': 'Run details',
+  'runSummary.field': 'Field',
+  'runSummary.value': 'Value',
+  'runSummary.patient': 'Patient (ID)',
+  'runSummary.insurer': 'Insurer',
+  'runSummary.urgency': 'Urgency level',
+  'runSummary.runId': 'Run ID',
+  'runSummary.generatedAt': 'Generated',
+  'runSummary.copy': 'Copy',
+  'runSummary.copied': 'Copied',
+  'runSummary.copyFailed': 'Could not copy. Select the table and copy it manually.',
+  'runSummary.download': 'Download CSV',
+
   /* ------------------------------------------------------------- upload */
 
   'upload.cta': 'Drop a policy here, or click to choose a file',

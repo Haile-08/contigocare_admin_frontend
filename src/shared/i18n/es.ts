@@ -293,6 +293,21 @@ export const es: Dictionary = {
   'analysis.provenance': '{model} · prompt {prompt} · {seconds}s · {tokens} tokens',
   'analysis.selfCritiqueApplied': 'autorrevisión aplicada',
 
+  /* -------------------------------------------------------- run summary */
+
+  'runSummary.title': 'Datos del análisis',
+  'runSummary.field': 'Campo',
+  'runSummary.value': 'Valor',
+  'runSummary.patient': 'Paciente (ID)',
+  'runSummary.insurer': 'Aseguradora',
+  'runSummary.urgency': 'Nivel de Urgencia',
+  'runSummary.runId': 'Run ID',
+  'runSummary.generatedAt': 'Fecha de generación',
+  'runSummary.copy': 'Copiar',
+  'runSummary.copied': 'Copiado',
+  'runSummary.copyFailed': 'No se pudo copiar. Seleccione la tabla y cópiela manualmente.',
+  'runSummary.download': 'Descargar CSV',
+
   /* ------------------------------------------------------------- upload */
 
   'upload.cta': 'Arrastre una póliza aquí, o haga clic para elegir un archivo',

@@ -107,6 +107,8 @@ export const analyzeResponseSchema = z.object({
   analysis_id: z.string(),
   patient_id: z.string(),
   status: z.string(),
+  /** ISO 8601. The run header's identifier and generation date come from this. */
+  created_at: z.string().default(''),
   result: analisisSchema.nullish(),
   redaction_summary: z.record(z.string(), z.number()).default({}),
   model_name: z.string().default(''),

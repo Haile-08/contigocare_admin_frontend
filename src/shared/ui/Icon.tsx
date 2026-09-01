@@ -15,6 +15,11 @@ const ICONS = {
   // and a generic file glyph reads as "attachment" instead.
   document: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h4',
   upload: 'M12 16V4M8 8l4-4 4 4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3',
+  // `upload` with the arrow reversed, so the pair reads as one gesture in two
+  // directions rather than two unrelated glyphs.
+  download: 'M12 4v12M8 12l4 4 4-4M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3',
+  // Two offset sheets, for copy-to-clipboard.
+  copy: 'M9 9h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zM5 15a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1',
   // The redaction affordance. A shield rather than a lock: the operator is
   // removing something to protect it, not sealing it away.
   shield: 'M12 21s7-3.5 7-9V6l-7-3-7 3v6c0 5.5 7 9 7 9z',
