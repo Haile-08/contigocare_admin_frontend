@@ -6,6 +6,8 @@ import type {
   AnalysisListQuery,
   AnalysisResult,
   AnalyzeRequest,
+  DeleteAnalysisRequest,
+  DeletionReceipt,
   ExtractedDocument,
   FeedbackRequest,
 } from '../model/types'
@@ -13,6 +15,7 @@ import {
   analysisDetailSchema,
   analysisListSchema,
   analyzeResponseSchema,
+  deletionResponseSchema,
   extractResponseSchema,
 } from '../model/types'
 
@@ -148,6 +151,28 @@ export const analysisApi = baseApi.injectEndpoints({
         { type: 'Analysis', id: analysisId },
       ],
     }),
+
+    deleteAnalysis: builder.mutation<DeletionReceipt, DeleteAnalysisRequest>({
+      query: ({ analysisId, scope }) => ({
+        url: `/insurance/analyses/${encodeURIComponent(analysisId)}`,
+        method: 'DELETE',
+        params: { scope },
+      }),
+      // Erasure is not idempotent from the operator's side: a retry after a
+      // response that was merely slow to arrive lands on a run that is already
+      // gone and reports a 404 for work that succeeded.
+      extraOptions: { maxRetries: 0 },
+      transformResponse: (response: unknown) => deletionResponseSchema.parse(response),
+      // With `scope: 'patient'` this removes rows the console never named, so
+      // the whole list and every dashboard figure are invalidated rather than
+      // the one id — a cached page that still lists an erased analysis is the
+      // one thing this feature cannot leave behind.
+      invalidatesTags: (_result, _error, { analysisId }) => [
+        { type: 'Dashboard', id: 'OVERVIEW' },
+        { type: 'Analysis', id: 'LIST' },
+        { type: 'Analysis', id: analysisId },
+      ],
+    }),
   }),
 })
 
@@ -157,4 +182,5 @@ export const {
   useExtractDocumentMutation,
   useAnalyzePolicyMutation,
   useSubmitFeedbackMutation,
+  useDeleteAnalysisMutation,
 } = analysisApi

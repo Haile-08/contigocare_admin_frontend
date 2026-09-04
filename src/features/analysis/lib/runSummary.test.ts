@@ -7,8 +7,6 @@ import {
   exportFileName,
   formatGeneratedAt,
   formatRunId,
-  toCsv,
-  toTabSeparated,
   urgencyLevel,
 } from './runSummary'
 
@@ -17,8 +15,7 @@ const RUN_AT = new Date(2026, 4, 22, 13, 12, 10).toISOString()
 
 function makeAnalysis(overrides: Partial<Analisis> = {}): Analisis {
   return analisisSchema.parse({
-    datos_poliza: { aseguradora: { valor: 'GNP', confianza: 'alta' } },
-    coberturas: {},
+    identificacion: { aseguradora: { valor: 'GNP', confianza: 'alta' } },
     ...overrides,
   })
 }
@@ -90,43 +87,26 @@ describe('buildRunSummary', () => {
 
   it('falls back to a dash where the agent found no insurer', () => {
     const analysis = makeAnalysis({
-      datos_poliza: { aseguradora: { valor: null, confianza: 'no_encontrado' } },
+      identificacion: { aseguradora: { valor: null, confianza: 'no_encontrado' } },
     })
     expect(buildRunSummary(analysis, makeMeta())[1]?.value).toBe('—')
   })
 })
 
-describe('serialising', () => {
-  const header = ['Campo', 'Valor'] as const
-  const rows = [
-    ['Paciente (ID)', 'PAC-2026-0020'],
-    ['Aseguradora', 'GNP'],
-  ] as const
-
-  it('copies as two tab-separated columns, header first', () => {
-    expect(toTabSeparated(header, rows)).toBe(
-      'Campo\tValor\nPaciente (ID)\tPAC-2026-0020\nAseguradora\tGNP',
-    )
-  })
-
-  it('quotes a CSV value that contains a comma or a quote', () => {
-    const csv = toCsv(header, [['Aseguradora', 'GNP, S.A. "Grupo"']])
-    expect(csv).toBe('Campo,Valor\r\nAseguradora,"GNP, S.A. ""Grupo"""')
-  })
-
+describe('exportFileName', () => {
   it('names the file after the patient and the run', () => {
-    expect(exportFileName(makeMeta())).toBe('PAC-2026-0020_20260522_131210.csv')
+    expect(exportFileName(makeMeta())).toBe('PAC-2026-0020_20260522_131210.pdf')
   })
 
   it('flattens a patient id that a filesystem would object to', () => {
     expect(exportFileName(makeMeta({ patient_id: 'PAC 2026/0020' }))).toBe(
-      'PAC-2026-0020_20260522_131210.csv',
+      'PAC-2026-0020_20260522_131210.pdf',
     )
   })
 
   it('falls back to the analysis id when there is no timestamp', () => {
     expect(exportFileName(makeMeta({ created_at: '' }))).toBe(
-      'PAC-2026-0020_0f2b1c8e-0000-4000-8000-000000000001.csv',
+      'PAC-2026-0020_0f2b1c8e-0000-4000-8000-000000000001.pdf',
     )
   })
 })

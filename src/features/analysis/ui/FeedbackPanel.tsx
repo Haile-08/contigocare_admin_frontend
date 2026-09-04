@@ -14,7 +14,7 @@ import type {
   FieldCorrection,
   StoredFeedback,
 } from '../model/types'
-import { COBERTURA_FIELD_ORDER, POLIZA_FIELD_ORDER } from '../model/types'
+import { CAMPO_SECTIONS } from '../model/types'
 
 interface FeedbackPanelProps {
   analysisId: string
@@ -84,14 +84,15 @@ export function FeedbackPanel({
   // whose contents no longer match what was stored.
   const [touched, setTouched] = useState(false)
 
-  const correctableFields = [
-    ...POLIZA_FIELD_ORDER.filter((key) => key in analysis.datos_poliza).map(
-      (key) => [`datos_poliza.${key}`, analysis.datos_poliza[key]?.valor ?? null] as const,
-    ),
-    ...COBERTURA_FIELD_ORDER.filter((key) => key in analysis.coberturas).map(
-      (key) => [`coberturas.${key}`, analysis.coberturas[key]?.valor ?? null] as const,
-    ),
-  ]
+  // Every extracted field, across every section — the paths here are the ones
+  // the golden set is keyed by, so a section the reviewer cannot correct is a
+  // section the eval harness has nothing to score against.
+  const correctableFields = CAMPO_SECTIONS.flatMap(([sectionName, order]) => {
+    const section = analysis[sectionName]
+    return order
+      .filter((key) => key in section)
+      .map((key) => [`${sectionName}.${key}`, section[key]?.valor ?? null] as const)
+  })
 
   const setCorrection = (path: string, was: string | null, shouldBe: string): void => {
     setTouched(true)

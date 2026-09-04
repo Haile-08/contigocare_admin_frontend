@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 import { Page, PageHeader } from '@/app/layouts/Page'
 import { paths } from '@/app/router/paths'
 import { useAppDispatch } from '@/app/store/hooks'
 import { useListAnalysesQuery } from '@/features/analysis/api/analysisApi'
+import type { DeletionReceipt } from '@/features/analysis/model/types'
 import { analysisDrawerToggled } from '@/features/ui/model/uiSlice'
 import { useTranslation } from '@/shared/i18n'
 import type { TFunction, TranslationKey } from '@/shared/i18n'
 import { cn } from '@/shared/lib/cn'
+import { Alert } from '@/shared/ui/Alert'
 import { Badge } from '@/shared/ui/Badge'
 import { Button } from '@/shared/ui/Button'
 import { Card } from '@/shared/ui/Card'
@@ -65,7 +67,13 @@ function labelFor(t: TFunction, map: Record<string, TranslationKey>, value: stri
 export function PoliciesPage() {
   const { t, fmt } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useAppDispatch()
+
+  // Left behind by the detail screen when an analysis is erased there. It is
+  // the only confirmation of an erasure the operator gets — the records it
+  // describes are already gone, so there is nothing to check it against.
+  const deletion = (location.state as { deletion?: DeletionReceipt } | null)?.deletion
 
   const [search, setSearch] = useState('')
   const [query, setQuery] = useState('')
@@ -116,6 +124,14 @@ export function PoliciesPage() {
         description={t('policies.description')}
         actions={analyzeButton}
       />
+
+      {deletion ? (
+        <Alert tone="success" className="mb-3">
+          {deletion.deleted_analyses === 1
+            ? t('delete.deletedRun')
+            : t('delete.deletedPatient', { count: String(deletion.deleted_analyses) })}
+        </Alert>
+      ) : null}
 
       <Card>
         <div className="flex items-center gap-3 border-b border-line-soft px-4.5 py-3">

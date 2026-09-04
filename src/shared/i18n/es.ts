@@ -20,10 +20,7 @@ export const es: Dictionary = {
   'common.reload': 'Recargar',
   'common.save': 'Guardar',
   'common.cancel': 'Cancelar',
-  'common.new': 'Nuevo',
-  'common.all': 'Todos',
   'common.viewAll': 'Ver todo',
-  'common.open': 'Abrir',
   'common.close': 'Cerrar',
   'common.loading': 'Cargando',
   'common.language': 'Idioma',
@@ -249,6 +246,37 @@ export const es: Dictionary = {
   'policyDetail.noText': 'No se almacenó texto para este análisis.',
   'policyDetail.noResult': 'Este análisis no produjo un resultado.',
 
+  /* ---------------------------------------------------------- eliminación */
+
+  'delete.action': 'Eliminar',
+  'delete.title': '¿Eliminar este análisis?',
+  'delete.description':
+    'Se elimina el texto redactado de la póliza, el análisis extraído y la revisión registrada. El documento cargado nunca se almacenó, así que no queda nada más.',
+  'delete.scopeLabel': 'Qué eliminar',
+  'delete.scopeRun': 'Solo este análisis',
+  'delete.scopeRunHint': {
+    one: 'Se conserva {count} análisis más de este paciente.',
+    other: 'Se conservan {count} análisis más de este paciente.',
+  },
+  'delete.scopePatient': {
+    one: 'Los {count} análisis de este paciente',
+    other: 'Los {count} análisis de este paciente',
+  },
+  'delete.scopePatientHint': 'Todo lo registrado con el paciente {id}, incluido este análisis.',
+  'delete.onlyAnalysis': 'Es el único análisis registrado del paciente {id}.',
+  'delete.irreversible':
+    'Esta acción no se puede deshacer. Los análisis eliminados no se archivan ni se pueden recuperar.',
+  'delete.confirmRun': 'Eliminar análisis',
+  'delete.confirmPatient': {
+    one: 'Eliminar {count} análisis',
+    other: 'Eliminar {count} análisis',
+  },
+  'delete.deletedRun': 'Se eliminó el análisis.',
+  'delete.deletedPatient': {
+    one: 'Se eliminó {count} análisis.',
+    other: 'Se eliminaron {count} análisis.',
+  },
+
   /* ------------------------------------------------------------- wizard */
 
   'wizard.title': 'Analizar una póliza',
@@ -265,48 +293,157 @@ export const es: Dictionary = {
   /* ----------------------------------------------------------- analysis */
 
   'analysis.title': 'Análisis de pólizas',
-  'analysis.description':
-    'Cargue una póliza, confirme qué se elimina y revise el resultado estructurado.',
   'analysis.newAnalysis': 'Empezar de nuevo',
   'analysis.patientId': 'ID del paciente',
   'analysis.patientIdHint': 'El identificador con el que se archivará este análisis.',
   'analysis.patientIdRequired': 'Ingrese un ID de paciente antes de cargar el archivo.',
   'analysis.forPatient': 'Análisis del paciente {id}',
-  'analysis.summary': 'Resumen',
-  'analysis.policyData': 'Datos de la póliza',
-  'analysis.coverage': 'Coberturas',
-  'analysis.findings': 'Hallazgos',
-  'analysis.benefits': 'Beneficios',
-  'analysis.waitingPeriods': 'Periodos de espera',
-  'analysis.exclusions': 'Exclusiones',
-  'analysis.preexisting': 'Preexistencias',
   'analysis.notFound': 'No encontrado',
   'analysis.showEvidence': 'Ver fuente',
   'analysis.hideEvidence': 'Ocultar fuente',
   'analysis.page': 'Página {page}',
-  'analysis.showEnglish': 'Ver resumen en inglés',
-  'analysis.showSpanish': 'Ver resumen en español',
   'analysis.criticalCount': {
     one: '{count} hallazgo crítico requiere atención.',
     other: '{count} hallazgos críticos requieren atención.',
   },
-  'analysis.provenance': '{model} · prompt {prompt} · {seconds}s · {tokens} tokens',
-  'analysis.selfCritiqueApplied': 'autorrevisión aplicada',
 
   /* -------------------------------------------------------- run summary */
 
-  'runSummary.title': 'Datos del análisis',
-  'runSummary.field': 'Campo',
-  'runSummary.value': 'Valor',
   'runSummary.patient': 'Paciente (ID)',
   'runSummary.insurer': 'Aseguradora',
   'runSummary.urgency': 'Nivel de Urgencia',
   'runSummary.runId': 'Run ID',
   'runSummary.generatedAt': 'Fecha de generación',
-  'runSummary.copy': 'Copiar',
-  'runSummary.copied': 'Copiado',
-  'runSummary.copyFailed': 'No se pudo copiar. Seleccione la tabla y cópiela manualmente.',
-  'runSummary.download': 'Descargar CSV',
+
+  /* ------------------------------------------------------ extracción de póliza */
+
+  'extraction.title': 'Extracción de Póliza',
+  'extraction.description':
+    'Los términos extraídos contra los que se lee todo lo demás. Abra un valor para ver la línea de la que salió.',
+  'extraction.download': 'Descargar PDF',
+  'extraction.downloadFailed': 'No se pudo generar el PDF. La tabla de arriba es seleccionable.',
+
+  'extraction.edit': 'Editar valores',
+  'extraction.doneEditing': 'Terminar edición',
+  'extraction.editHint':
+    'Corrija un valor que el análisis leyó mal antes de exportar. El análisis guardado no se modifica: las correcciones aplican a esta tabla y al PDF que descargue de ella.',
+  'extraction.editField': 'Valor de {field}',
+  'extraction.revert': 'Restaurar el valor extraído',
+  'extraction.editedMarker': 'Corregido por el revisor',
+  'extraction.editedWas': 'Extraído: {value}',
+  'extraction.editedNotice': {
+    one: 'Se corrigió 1 valor a mano. El PDF lleva la corrección y la señala como tal.',
+    other: 'Se corrigieron {count} valores a mano. El PDF lleva las correcciones y las señala como tales.',
+  },
+  'extraction.resetEdits': 'Deshacer todas las correcciones',
+
+  'extraction.pdfIntro':
+    'Los términos que la póliza establece, extraídos del contrato y agrupados como los presenta el reporte. Un guion (—) indica un dato que el análisis no encontró en el documento.',
+  'extraction.pdfEditedNote': {
+    one: '* Un valor fue corregido a mano por el revisor y no es el valor que extrajo el análisis.',
+    other:
+      '* Los {count} valores marcados con asterisco fueron corregidos a mano por el revisor y no son los valores que extrajo el análisis.',
+  },
+  'extraction.pdfFooter':
+    'CONFIDENCIAL — para uso del coordinador del caso. No contiene datos personales del paciente más allá del ID. Cada valor es rastreable a una cita en la consola.',
+  'extraction.pdfFooterEdited':
+    'CONFIDENCIAL — para uso del coordinador del caso. No contiene datos personales del paciente más allá del ID. Cada valor no marcado con asterisco es rastreable a una cita en la consola.',
+
+  'extraction.groupIdentification': 'Identificación y administrativo',
+  'extraction.groupFinancial': 'Estructura financiera',
+  'extraction.groupCoverage': 'Alcance de la cobertura',
+  'extraction.groupExclusions': 'Exclusiones y limitaciones',
+  'extraction.groupPreexisting': 'Preexistencias y continuidad',
+  'extraction.groupClaims': 'Proceso de siniestros',
+  'extraction.groupDisputes': 'Disputa y regulación',
+
+  'extraction.aseguradora': 'Aseguradora',
+  'extraction.nombre_plan': 'Plan',
+  'extraction.nivel_plan': 'Nivel del plan',
+  'extraction.numero_poliza': 'Número de póliza',
+  'extraction.tipo_poliza': 'Tipo de póliza',
+  'extraction.contratante': 'Contratante',
+  'extraction.asegurado_titular': 'Asegurado titular',
+  'extraction.numero_dependientes': 'Dependientes',
+  'extraction.vigencia_inicio': 'Inicio de vigencia',
+  'extraction.vigencia_fin': 'Fin de vigencia',
+  'extraction.fecha_renovacion': 'Fecha de renovación',
+  'extraction.moneda': 'Moneda',
+  'extraction.codigo_agente': 'Código de agente',
+  'extraction.registro_cnsf': 'Registro CNSF',
+  'extraction.periodo': 'Periodo de póliza',
+  'extraction.confidence': 'Confianza de extracción',
+  'extraction.extractedAt': 'Fecha de extracción',
+
+  'extraction.suma_asegurada': 'Suma asegurada',
+  'extraction.deducible': 'Deducible',
+  'extraction.tipo_deducible': 'Tipo de deducible',
+  'extraction.coaseguro_porcentaje': 'Coaseguro (%)',
+  'extraction.tope_coaseguro': 'Tope de coaseguro',
+  'extraction.copagos': 'Copagos',
+  'extraction.prima_total': 'Prima total',
+  'extraction.prima_neta': 'Prima neta',
+  'extraction.recargos_derechos': 'Derechos y recargos',
+  'extraction.forma_pago': 'Forma de pago',
+  'extraction.tabulador_aplicable': 'Tabulador aplicable',
+  'extraction.tope_honorarios_medicos': 'Tope honorarios médicos',
+  'extraction.tope_medicamentos': 'Tope medicamentos',
+  'extraction.tope_enfermeria': 'Tope enfermería',
+  'extraction.tope_por_padecimiento': 'Tope por padecimiento',
+
+  'extraction.hospitalizacion_cubierta': 'Hospitalización',
+  'extraction.ambulatorio_cubierto': 'Ambulatorio',
+  'extraction.medicamentos_cubiertos': 'Medicamentos',
+  'extraction.maternidad_cubierta': 'Maternidad',
+  'extraction.emergencias_cubiertas': 'Emergencias',
+  'extraction.dental_vision_cubierto': 'Dental y visual',
+  'extraction.biologicos_cubiertos': 'Biológicos cubiertos',
+  'extraction.medicamentos_especialidad_cubiertos': 'Meds especialidad cubiertos',
+  'extraction.pago_directo_disponible': 'Pago directo disponible',
+  'extraction.pago_directo_medicamentos': 'Pago directo medicamentos',
+  'extraction.coaseguro_medicamentos_ambulatorio': 'Coaseguro meds ambulatorio',
+  'extraction.modelo_red': 'Modelo de red',
+  'extraction.red_hospitalaria': 'Red hospitalaria',
+  'extraction.nivel_hospitalario': 'Nivel hospitalario',
+  'extraction.zona_cobertura': 'Zona de cobertura',
+  'extraction.cobertura_eua': 'Cobertura en EUA',
+  'extraction.terminos_cobertura_extranjero': 'Términos en el extranjero',
+
+  'extraction.edad_maxima_admision': 'Edad máxima de admisión',
+  'extraction.edad_maxima_permanencia': 'Edad máxima de permanencia',
+  'extraction.congenitos_excluidos': 'Congénitos excluidos',
+  'extraction.productos_dermatologicos_excluidos': 'Productos derm excluidos',
+  'extraction.biologicos_excluidos': 'Biológicos excluidos',
+  'extraction.cosmeticos_excluidos': 'Cosméticos excluidos',
+  'extraction.exclusiones_especificas_asegurado': 'Exclusiones específicas',
+
+  'extraction.preexistencias_excluidas': 'Preexistencias excluidas',
+  'extraction.via_cobertura': 'Vía de cobertura',
+  'extraction.cobertura_despues_de_meses': 'Cobertura después de (meses)',
+  'extraction.rider_opcional_disponible': 'Rider opcional disponible',
+  'extraction.regla_30_dias': 'Regla de 30 días',
+  'extraction.antiguedad': 'Antigüedad',
+  'extraction.portabilidad_antiguedad': 'Portabilidad de antigüedad',
+
+  'extraction.plazo_aviso_siniestro_dias': 'Plazo de aviso (días)',
+  'extraction.tipo_dias_aviso': 'Días hábiles o naturales',
+  'extraction.metodo_notificacion': 'Método de notificación',
+  'extraction.formatos_requeridos': 'Formatos requeridos',
+  'extraction.plazo_liquidacion_dias': 'Plazo liquidación (días)',
+  'extraction.via_reembolso': 'Vía de reembolso',
+  'extraction.via_programacion': 'Vía de programación',
+  'extraction.preautorizacion_alto_costo': 'Preautorización alto costo',
+
+  'extraction.une_disponible': 'UNE disponible',
+  'extraction.une_suspende_prescripcion': 'UNE suspende prescripción',
+  'extraction.condusef_disponible': 'CONDUSEF disponible',
+  'extraction.clausula_arbitraje': 'Cláusula de arbitraje',
+  'extraction.plazo_prescripcion': 'Plazo de prescripción',
+  'extraction.suspension_prescripcion': 'Suspensión de prescripción',
+  'extraction.clausula_renovacion': 'Cláusula de renovación',
+  'extraction.garantia_renovacion_vitalicia': 'Renovación garantizada/vitalicia',
+  'extraction.agravacion_riesgo': 'Agravación del riesgo',
+  'extraction.proceso_cancelacion': 'Proceso de cancelación',
 
   /* ------------------------------------------------------------- upload */
 
@@ -371,39 +508,9 @@ export const es: Dictionary = {
   'confidence.baja': 'Confianza baja',
   'confidence.no_encontrado': 'No encontrado',
 
-  'severity.critica': 'Crítico',
-  'severity.alta': 'Alto',
-  'severity.media': 'Medio',
-  'severity.informativa': 'Informativo',
-
   'status.succeeded': 'Exitoso',
   'status.failed': 'Fallido',
   'status.blocked_by_redaction': 'Bloqueado',
-
-  'field.poliza.numero_poliza': 'Número de póliza',
-  'field.poliza.aseguradora': 'Aseguradora',
-  'field.poliza.nombre_plan': 'Plan',
-  'field.poliza.ramo': 'Ramo',
-  'field.poliza.moneda': 'Moneda',
-  'field.poliza.vigencia_inicio': 'Inicio de vigencia',
-  'field.poliza.vigencia_fin': 'Fin de vigencia',
-  'field.poliza.fecha_emision': 'Fecha de emisión',
-  'field.poliza.antiguedad': 'Antigüedad',
-  'field.poliza.forma_pago': 'Forma de pago',
-  'field.poliza.prima_total': 'Prima total',
-  'field.poliza.contratante': 'Contratante',
-  'field.poliza.titular': 'Asegurado titular',
-  'field.poliza.numero_dependientes': 'Dependientes',
-
-  'field.cobertura.suma_asegurada': 'Suma asegurada',
-  'field.cobertura.suma_asegurada_por_padecimiento': 'Suma asegurada por padecimiento',
-  'field.cobertura.deducible': 'Deducible',
-  'field.cobertura.coaseguro_porcentaje': 'Coaseguro',
-  'field.cobertura.tope_coaseguro': 'Tope de coaseguro',
-  'field.cobertura.nivel_hospitalario': 'Nivel hospitalario',
-  'field.cobertura.tabulador_medico': 'Tabulador médico',
-  'field.cobertura.cobertura_geografica': 'Cobertura geográfica',
-  'field.cobertura.red_hospitalaria': 'Red hospitalaria',
 
   /* ------------------------------------------------------------- fields */
 

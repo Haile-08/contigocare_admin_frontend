@@ -5,16 +5,16 @@ import type { Analisis, AnalysisResult, Severidad } from '../model/types'
 /**
  * The five facts that identify a finished run.
  *
- * These are the header of an outward-facing document: the summary below them is
- * copied out of the console and sent on to a broker, and a paragraph about a
- * policy is worth very little without *which* patient, *which* insurer and
- * *which* run produced it. So the identifying fields are built once, here, in a
- * shape that renders, copies and exports identically — the table on screen and
- * the CSV in the broker's inbox cannot disagree about the urgency level,
- * because there is one function that decides it.
+ * These are the header of an outward-facing document: the extraction below them
+ * leaves the console and is sent on to a broker, and a table of policy terms is
+ * worth very little without *which* patient, *which* insurer and *which* run
+ * produced it. So the identifying fields are built once, here, in a shape that
+ * renders and exports identically — the screen and the PDF in the broker's
+ * inbox cannot disagree about the urgency level, because there is one function
+ * that decides it.
  *
- * Everything in this module is pure. The clipboard and the download live in the
- * component; the strings they carry are built and tested here.
+ * Everything in this module is pure. The download lives in the component; the
+ * strings it carries are built and tested here.
  */
 
 export type UrgencyLevel = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'INFO'
@@ -112,7 +112,7 @@ export interface RunSummaryRow {
  * last because they are what you quote when asking about it later.
  */
 export function buildRunSummary(analysis: Analisis, meta: AnalysisResult): RunSummaryRow[] {
-  const insurer = analysis.datos_poliza['aseguradora']?.valor?.trim()
+  const insurer = analysis.identificacion['aseguradora']?.valor?.trim()
 
   return [
     { key: 'patient', label: 'runSummary.patient', value: meta.patient_id || PLACEHOLDER },
@@ -127,41 +127,10 @@ export function buildRunSummary(analysis: Analisis, meta: AnalysisResult): RunSu
   ]
 }
 
-/** A label/value pair with the label already translated, ready to serialise. */
-export type ExportRow = readonly [label: string, value: string]
-
-/**
- * Tab-separated, for the clipboard.
- *
- * Tabs rather than commas because the destination is a paste: Excel, Sheets and
- * Outlook all turn two tab-separated columns into a table, and the same text
- * still reads as a list in a plain-text mail.
- */
-export function toTabSeparated(header: ExportRow, rows: readonly ExportRow[]): string {
-  return [header, ...rows].map(([label, value]) => `${label}\t${value}`).join('\n')
-}
-
-function escapeCsv(value: string): string {
-  return /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value
-}
-
-/**
- * RFC 4180 CSV, CRLF line endings.
- *
- * The caller prepends {@link CSV_BOM}: without it Excel on Windows reads the
- * file as its local codepage and renders "Fecha de generación" as mojibake,
- * which is exactly the sort of detail that makes an export look untrustworthy.
- */
-export function toCsv(header: ExportRow, rows: readonly ExportRow[]): string {
-  return [header, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\r\n')
-}
-
-export const CSV_BOM = '\uFEFF'
-
-/** `PAC-2026-0020_20260522_131210.csv`, with anything a filesystem dislikes flattened. */
-export function exportFileName(meta: AnalysisResult): string {
+/** `PAC-2026-0020_20260522_131210.pdf`, with anything a filesystem dislikes flattened. */
+export function exportFileName(meta: AnalysisResult, extension = 'pdf'): string {
   const patient = meta.patient_id.replaceAll(/[^\w.-]+/g, '-').replace(/^-+|-+$/g, '')
   const stamp = formatRunId(meta.created_at) ?? meta.analysis_id
 
-  return `${patient || 'analisis'}_${stamp}.csv`
+  return `${patient || 'analisis'}_${stamp}.${extension}`
 }

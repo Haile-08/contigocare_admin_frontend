@@ -1,18 +1,21 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { Page, PageHeader } from '@/app/layouts/Page'
 import { paths } from '@/app/router/paths'
 import { useGetAnalysisQuery } from '@/features/analysis/api/analysisApi'
 import { AnalysisView } from '@/features/analysis/ui/AnalysisView'
+import { DeleteAnalysisDialog } from '@/features/analysis/ui/DeleteAnalysisDialog'
 import { FeedbackPanel } from '@/features/analysis/ui/FeedbackPanel'
 import { useTranslation } from '@/shared/i18n'
 import type { TranslationKey } from '@/shared/i18n'
 import { cn } from '@/shared/lib/cn'
 import { Alert } from '@/shared/ui/Alert'
 import { Badge } from '@/shared/ui/Badge'
+import { Button } from '@/shared/ui/Button'
 import { Card, CardHeader } from '@/shared/ui/Card'
 import { ErrorState } from '@/shared/ui/ErrorState'
+import { Icon } from '@/shared/ui/Icon'
 import { Skeleton } from '@/shared/ui/Skeleton'
 
 type Tab = 'analysis' | 'policy'
@@ -37,17 +40,26 @@ const STATUS_LABEL: Record<string, TranslationKey> = {
  * The verdict is editable. A review recorded in a hurry at the end of the
  * wizard is the one most likely to need correcting, and the only place to do
  * that is here.
+ *
+ * So is erasure, and for the same reason: this is the screen that shows what is
+ * held on a patient, so it is the screen that has to be able to remove it.
  */
 export function PolicyDetailPage() {
   const { t, fmt } = useTranslation()
   const { analysisId = '' } = useParams()
+  const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('analysis')
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  // Set the moment the erasure succeeds. Deleting invalidates this analysis's
+  // cache entry, so the detail query refetches a run that no longer exists —
+  // without this flag the screen flashes a 404 error state on its way out.
+  const [deleted, setDeleted] = useState(false)
 
   const { data, isLoading, isError, error, refetch } = useGetAnalysisQuery(analysisId, {
-    skip: analysisId === '',
+    skip: analysisId === '' || deleted,
   })
 
-  if (isError) {
+  if (isError && !deleted) {
     return (
       <Page>
         <PageHeader title={t('policyDetail.title')} />
@@ -79,13 +91,41 @@ export function PolicyDetailPage() {
           pages: String(data.page_count),
         })}
         actions={
-          <Link
-            to={paths.policies}
-            className="text-[12px] text-muted underline-offset-2 transition-colors hover:text-body hover:underline"
-          >
-            {t('policyDetail.backToList')}
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              to={paths.policies}
+              className="text-[12px] text-muted underline-offset-2 transition-colors hover:text-body hover:underline"
+            >
+              {t('policyDetail.backToList')}
+            </Link>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setConfirmingDelete(true)}
+              leadingIcon={<Icon name="trash" className="size-3.5" />}
+              className="text-critical hover:text-critical"
+            >
+              {t('delete.action')}
+            </Button>
+          </div>
         }
+      />
+
+      <DeleteAnalysisDialog
+        open={confirmingDelete}
+        analysisId={data.analysis_id}
+        patientId={data.patient_id}
+        patientAnalysisCount={data.patient_analysis_count}
+        onClose={() => setConfirmingDelete(false)}
+        onDeleted={(receipt) => {
+          setDeleted(true)
+          setConfirmingDelete(false)
+          // `replace`, so Back does not return to a policy that no longer
+          // exists. The receipt travels with the navigation because the list is
+          // where the operator lands and the only place left to confirm what
+          // was removed.
+          navigate(paths.policies, { replace: true, state: { deletion: receipt } })
+        }}
       />
 
       <div className="flex flex-col gap-4">

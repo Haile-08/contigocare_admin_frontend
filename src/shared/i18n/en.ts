@@ -23,10 +23,7 @@ export const en = {
   'common.reload': 'Reload',
   'common.save': 'Save',
   'common.cancel': 'Cancel',
-  'common.new': 'New',
-  'common.all': 'All',
   'common.viewAll': 'View all',
-  'common.open': 'Open',
   'common.close': 'Close',
   'common.loading': 'Loading',
   'common.language': 'Language',
@@ -245,6 +242,36 @@ export const en = {
   'policyDetail.noText': 'No text was stored for this run.',
   'policyDetail.noResult': 'This run did not produce an analysis.',
 
+  /* ------------------------------------------------------------- erasure */
+
+  'delete.action': 'Delete',
+  'delete.title': 'Delete this analysis?',
+  'delete.description':
+    'Removes the redacted policy text, the extracted analysis and the review recorded against it. The uploaded document was never stored, so nothing else is kept.',
+  'delete.scopeLabel': 'What to delete',
+  'delete.scopeRun': 'This analysis only',
+  'delete.scopeRunHint': {
+    one: '{count} other analysis for this patient is kept.',
+    other: '{count} other analyses for this patient are kept.',
+  },
+  'delete.scopePatient': {
+    one: 'All {count} analysis for this patient',
+    other: 'All {count} analyses for this patient',
+  },
+  'delete.scopePatientHint': 'Everything filed under patient {id}, this analysis included.',
+  'delete.onlyAnalysis': 'This is the only analysis on record for patient {id}.',
+  'delete.irreversible': 'This cannot be undone. Deleted analyses are not archived or recoverable.',
+  'delete.confirmRun': 'Delete analysis',
+  'delete.confirmPatient': {
+    one: 'Delete {count} analysis',
+    other: 'Delete {count} analyses',
+  },
+  'delete.deletedRun': 'The analysis was deleted.',
+  'delete.deletedPatient': {
+    one: '{count} analysis was deleted.',
+    other: '{count} analyses were deleted.',
+  },
+
   /* ------------------------------------------------------------- wizard */
 
   'wizard.title': 'Analyse a policy',
@@ -260,48 +287,158 @@ export const en = {
   /* ----------------------------------------------------------- analysis */
 
   'analysis.title': 'Policy analysis',
-  'analysis.description':
-    'Upload a policy, confirm what is removed, and review the structured result.',
   'analysis.newAnalysis': 'Start over',
   'analysis.patientId': 'Patient ID',
   'analysis.patientIdHint': 'The identifier this analysis will be filed under.',
   'analysis.patientIdRequired': 'Enter a patient ID before uploading.',
   'analysis.forPatient': 'Analysis for patient {id}',
-  'analysis.summary': 'Summary',
-  'analysis.policyData': 'Policy details',
-  'analysis.coverage': 'Coverage',
-  'analysis.findings': 'Findings',
-  'analysis.benefits': 'Benefits',
-  'analysis.waitingPeriods': 'Waiting periods',
-  'analysis.exclusions': 'Exclusions',
-  'analysis.preexisting': 'Pre-existing conditions',
   'analysis.notFound': 'Not found',
   'analysis.showEvidence': 'Show source',
   'analysis.hideEvidence': 'Hide source',
   'analysis.page': 'Page {page}',
-  'analysis.showEnglish': 'Show English summary',
-  'analysis.showSpanish': 'Show Spanish summary',
   'analysis.criticalCount': {
     one: '{count} critical finding needs attention.',
     other: '{count} critical findings need attention.',
   },
-  'analysis.provenance': '{model} · prompt {prompt} · {seconds}s · {tokens} tokens',
-  'analysis.selfCritiqueApplied': 'self-review applied',
 
   /* -------------------------------------------------------- run summary */
 
-  'runSummary.title': 'Run details',
-  'runSummary.field': 'Field',
-  'runSummary.value': 'Value',
   'runSummary.patient': 'Patient (ID)',
   'runSummary.insurer': 'Insurer',
   'runSummary.urgency': 'Urgency level',
   'runSummary.runId': 'Run ID',
   'runSummary.generatedAt': 'Generated',
-  'runSummary.copy': 'Copy',
-  'runSummary.copied': 'Copied',
-  'runSummary.copyFailed': 'Could not copy. Select the table and copy it manually.',
-  'runSummary.download': 'Download CSV',
+
+  /* --------------------------------------------------- policy extraction */
+
+  'extraction.title': 'Policy extraction',
+  'extraction.description':
+    'The extracted terms everything below is read against. Open a value to see the line it came from.',
+  'extraction.download': 'Download PDF',
+  'extraction.downloadFailed': 'The PDF could not be generated. The table above is selectable.',
+
+  'extraction.edit': 'Edit values',
+  'extraction.doneEditing': 'Done editing',
+  'extraction.editHint':
+    'Correct a value the analysis misread before exporting. The stored analysis is not changed — corrections apply to this table and the PDF you download from it.',
+  'extraction.editField': 'Value for {field}',
+  'extraction.revert': 'Restore the extracted value',
+  'extraction.editedMarker': 'Corrected by the reviewer',
+  'extraction.editedWas': 'Extracted: {value}',
+  'extraction.editedNotice': {
+    one: '1 value was corrected by hand. The PDF carries the correction and marks it as one.',
+    other:
+      '{count} values were corrected by hand. The PDF carries the corrections and marks them as such.',
+  },
+  'extraction.resetEdits': 'Undo all corrections',
+
+  'extraction.pdfIntro':
+    'The terms the policy sets out, extracted from the contract and grouped the way the report presents them. A dash (—) marks a value the analysis did not find in the document.',
+  'extraction.pdfEditedNote': {
+    one: '* One value was corrected by hand by the reviewer and is not the value the analysis extracted.',
+    other:
+      '* The {count} values marked with an asterisk were corrected by hand by the reviewer and are not the values the analysis extracted.',
+  },
+  'extraction.pdfFooter':
+    'Confidential — for the case coordinator. Contains no personal data beyond the patient ID. Every value is traceable to a quote in the console.',
+  'extraction.pdfFooterEdited':
+    'Confidential — for the case coordinator. Contains no personal data beyond the patient ID. Every value not marked with an asterisk is traceable to a quote in the console.',
+
+  'extraction.groupIdentification': 'Identification and administrative',
+  'extraction.groupFinancial': 'Financial structure',
+  'extraction.groupCoverage': 'Coverage scope',
+  'extraction.groupExclusions': 'Exclusions and limitations',
+  'extraction.groupPreexisting': 'Pre-existing and continuity',
+  'extraction.groupClaims': 'Claims process',
+  'extraction.groupDisputes': 'Dispute and regulatory',
+
+  'extraction.aseguradora': 'Insurer',
+  'extraction.nombre_plan': 'Plan',
+  'extraction.nivel_plan': 'Plan tier',
+  'extraction.numero_poliza': 'Policy number',
+  'extraction.tipo_poliza': 'Policy type',
+  'extraction.contratante': 'Policyholder',
+  'extraction.asegurado_titular': 'Named insured',
+  'extraction.numero_dependientes': 'Dependants',
+  'extraction.vigencia_inicio': 'Coverage start',
+  'extraction.vigencia_fin': 'Coverage end',
+  'extraction.fecha_renovacion': 'Renewal date',
+  'extraction.moneda': 'Currency',
+  'extraction.codigo_agente': 'Agent code',
+  'extraction.registro_cnsf': 'CNSF registration',
+  'extraction.periodo': 'Policy period',
+  'extraction.confidence': 'Extraction confidence',
+  'extraction.extractedAt': 'Extracted on',
+
+  'extraction.suma_asegurada': 'Sum insured',
+  'extraction.deducible': 'Deductible',
+  'extraction.tipo_deducible': 'Deductible type',
+  'extraction.coaseguro_porcentaje': 'Coinsurance (%)',
+  'extraction.tope_coaseguro': 'Coinsurance cap',
+  'extraction.copagos': 'Copays',
+  'extraction.prima_total': 'Total premium',
+  'extraction.prima_neta': 'Net premium',
+  'extraction.recargos_derechos': 'Fees and surcharges',
+  'extraction.forma_pago': 'Payment frequency',
+  'extraction.tabulador_aplicable': 'Applicable fee schedule',
+  'extraction.tope_honorarios_medicos': 'Cap on medical fees',
+  'extraction.tope_medicamentos': 'Cap on drugs',
+  'extraction.tope_enfermeria': 'Cap on nursing',
+  'extraction.tope_por_padecimiento': 'Cap per condition',
+
+  'extraction.hospitalizacion_cubierta': 'Inpatient',
+  'extraction.ambulatorio_cubierto': 'Outpatient',
+  'extraction.medicamentos_cubiertos': 'Drugs',
+  'extraction.maternidad_cubierta': 'Maternity',
+  'extraction.emergencias_cubiertas': 'Emergencies',
+  'extraction.dental_vision_cubierto': 'Dental and vision',
+  'extraction.biologicos_cubiertos': 'Biologics covered',
+  'extraction.medicamentos_especialidad_cubiertos': 'Specialty drugs covered',
+  'extraction.pago_directo_disponible': 'Direct payment available',
+  'extraction.pago_directo_medicamentos': 'Direct payment for drugs',
+  'extraction.coaseguro_medicamentos_ambulatorio': 'Outpatient drug coinsurance',
+  'extraction.modelo_red': 'Network model',
+  'extraction.red_hospitalaria': 'Hospital network',
+  'extraction.nivel_hospitalario': 'Hospital tier',
+  'extraction.zona_cobertura': 'Coverage area',
+  'extraction.cobertura_eua': 'US coverage',
+  'extraction.terminos_cobertura_extranjero': 'Terms abroad',
+
+  'extraction.edad_maxima_admision': 'Maximum entry age',
+  'extraction.edad_maxima_permanencia': 'Maximum renewal age',
+  'extraction.congenitos_excluidos': 'Congenital conditions excluded',
+  'extraction.productos_dermatologicos_excluidos': 'Dermatological products excluded',
+  'extraction.biologicos_excluidos': 'Biologics excluded',
+  'extraction.cosmeticos_excluidos': 'Cosmetics excluded',
+  'extraction.exclusiones_especificas_asegurado': 'Insured-specific exclusions',
+
+  'extraction.preexistencias_excluidas': 'Pre-existing excluded',
+  'extraction.via_cobertura': 'Route to coverage',
+  'extraction.cobertura_despues_de_meses': 'Covered after (months)',
+  'extraction.rider_opcional_disponible': 'Optional rider available',
+  'extraction.regla_30_dias': '30-day rule',
+  'extraction.antiguedad': 'Policy tenure',
+  'extraction.portabilidad_antiguedad': 'Tenure portability',
+
+  'extraction.plazo_aviso_siniestro_dias': 'Notice deadline (days)',
+  'extraction.tipo_dias_aviso': 'Business or calendar days',
+  'extraction.metodo_notificacion': 'Notice method',
+  'extraction.formatos_requeridos': 'Required forms',
+  'extraction.plazo_liquidacion_dias': 'Settlement deadline (days)',
+  'extraction.via_reembolso': 'Reimbursement pathway',
+  'extraction.via_programacion': 'Scheduled-payment pathway',
+  'extraction.preautorizacion_alto_costo': 'High-cost pre-authorisation',
+
+  'extraction.une_disponible': 'UNE available',
+  'extraction.une_suspende_prescripcion': 'UNE suspends limitation period',
+  'extraction.condusef_disponible': 'CONDUSEF available',
+  'extraction.clausula_arbitraje': 'Arbitration clause',
+  'extraction.plazo_prescripcion': 'Limitation period',
+  'extraction.suspension_prescripcion': 'What suspends the limitation period',
+  'extraction.clausula_renovacion': 'Renewal clause',
+  'extraction.garantia_renovacion_vitalicia': 'Guaranteed/lifetime renewal',
+  'extraction.agravacion_riesgo': 'Aggravation of risk',
+  'extraction.proceso_cancelacion': 'Cancellation process',
 
   /* ------------------------------------------------------------- upload */
 
@@ -363,43 +500,9 @@ export const en = {
   'confidence.baja': 'Low confidence',
   'confidence.no_encontrado': 'Not found',
 
-  'severity.critica': 'Critical',
-  'severity.alta': 'High',
-  'severity.media': 'Medium',
-  'severity.informativa': 'Info',
-
   'status.succeeded': 'Succeeded',
   'status.failed': 'Failed',
   'status.blocked_by_redaction': 'Blocked',
-
-  /* Policy fields. Spanish terms are kept in the English dictionary where the
-     Spanish is the contractual term — "coaseguro" and "coinsurance" are not
-     interchangeable in a Mexican policy, and translating it here would make the
-     console disagree with the document on screen. */
-  'field.poliza.numero_poliza': 'Policy number',
-  'field.poliza.aseguradora': 'Insurer',
-  'field.poliza.nombre_plan': 'Plan',
-  'field.poliza.ramo': 'Line of business',
-  'field.poliza.moneda': 'Currency',
-  'field.poliza.vigencia_inicio': 'Cover starts',
-  'field.poliza.vigencia_fin': 'Cover ends',
-  'field.poliza.fecha_emision': 'Issued',
-  'field.poliza.antiguedad': 'Antigüedad (tenure)',
-  'field.poliza.forma_pago': 'Payment frequency',
-  'field.poliza.prima_total': 'Premium',
-  'field.poliza.contratante': 'Policyholder',
-  'field.poliza.titular': 'Primary insured',
-  'field.poliza.numero_dependientes': 'Dependants',
-
-  'field.cobertura.suma_asegurada': 'Suma asegurada (sum insured)',
-  'field.cobertura.suma_asegurada_por_padecimiento': 'Sum insured per condition',
-  'field.cobertura.deducible': 'Deducible (deductible)',
-  'field.cobertura.coaseguro_porcentaje': 'Coaseguro',
-  'field.cobertura.tope_coaseguro': 'Coaseguro cap',
-  'field.cobertura.nivel_hospitalario': 'Hospital tier',
-  'field.cobertura.tabulador_medico': 'Fee schedule',
-  'field.cobertura.cobertura_geografica': 'Geographic cover',
-  'field.cobertura.red_hospitalaria': 'Hospital network',
 
   /* ------------------------------------------------------------- fields */
 
