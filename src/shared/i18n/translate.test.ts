@@ -23,17 +23,17 @@ describe('translate', () => {
   })
 
   it('picks the singular form on a count of one, and the plural otherwise', () => {
-    expect(translate('en', 'analysis.criticalCount', { count: 1 })).toBe(
-      '1 critical finding needs attention.',
+    expect(translate('en', 'extraction.editedNotice', { count: 1 })).toBe(
+      '1 value was corrected by hand. The PDF carries the correction and marks it as one.',
     )
-    expect(translate('en', 'analysis.criticalCount', { count: 4 })).toBe(
-      '4 critical findings need attention.',
+    expect(translate('en', 'extraction.editedNotice', { count: 4 })).toBe(
+      '4 values were corrected by hand. The PDF carries the corrections and marks them as such.',
     )
-    expect(translate('es', 'analysis.criticalCount', { count: 1 })).toBe(
-      '1 hallazgo crítico requiere atención.',
+    expect(translate('es', 'extraction.editedNotice', { count: 1 })).toBe(
+      'Se corrigió 1 valor a mano. El PDF lleva la corrección y la señala como tal.',
     )
-    expect(translate('es', 'analysis.criticalCount', { count: 0 })).toBe(
-      '0 hallazgos críticos requieren atención.',
+    expect(translate('es', 'extraction.editedNotice', { count: 0 })).toBe(
+      'Se corrigieron 0 valores a mano. El PDF lleva las correcciones y las señala como tales.',
     )
   })
 

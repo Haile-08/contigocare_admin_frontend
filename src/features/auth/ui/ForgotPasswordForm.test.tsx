@@ -49,10 +49,10 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup()
     renderWithProviders(<ForgotPasswordForm />, { preloadedState: { ui: englishUi } })
 
-    await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
+    await user.type(screen.getByLabelText('Email'), 'ops@karai.health')
     await user.click(screen.getByRole('button', { name: 'Send the link' }))
 
-    const confirmation = await screen.findByText(/If an account exists for ops@contigo\.care/)
+    const confirmation = await screen.findByText(/If an account exists for ops@karai\.health/)
     expect(confirmation).toBeInTheDocument()
   })
 
@@ -67,7 +67,7 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup()
     const { store } = renderWithProviders(<ForgotPasswordForm />, { preloadedState: { ui: englishUi } })
 
-    await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
+    await user.type(screen.getByLabelText('Email'), 'ops@karai.health')
     await user.click(screen.getByRole('button', { name: 'Send the link' }))
 
     await screen.findByText(/If an account exists/)
@@ -111,7 +111,7 @@ describe('ForgotPasswordForm', () => {
     const user = userEvent.setup()
     renderWithProviders(<ForgotPasswordForm />, { preloadedState: { ui: englishUi } })
 
-    await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
+    await user.type(screen.getByLabelText('Email'), 'ops@karai.health')
     await user.click(screen.getByRole('button', { name: 'Send the link' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Demasiadas solicitudes.')

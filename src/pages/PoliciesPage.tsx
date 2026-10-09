@@ -130,6 +130,9 @@ export function PoliciesPage() {
           {deletion.deleted_analyses === 1
             ? t('delete.deletedRun')
             : t('delete.deletedPatient', { count: String(deletion.deleted_analyses) })}
+          {deletion.deleted_navigations > 0
+            ? ` ${t('delete.navigationsIncluded', { count: String(deletion.deleted_navigations) })}`
+            : ''}
         </Alert>
       ) : null}
 
@@ -197,13 +200,6 @@ export function PoliciesPage() {
                       <span className="truncate text-[12.5px] font-medium text-body">
                         {t('dashboard.patientLabel', { id: row.patient_id })}
                       </span>
-                      {row.hallazgos_criticos > 0 ? (
-                        <Badge tone="critical">
-                          {t('dashboard.criticalFindings', {
-                            count: String(row.hallazgos_criticos),
-                          })}
-                        </Badge>
-                      ) : null}
                     </div>
                     <span className="truncate text-[11px] text-faint">
                       {row.aseguradora ?? t('dashboard.unknownInsurer')} ·{' '}

@@ -23,8 +23,8 @@ interface FeedbackPanelProps {
   existing?: StoredFeedback | null
   /** Label for the submit button. Defaults to "Submit review". */
   submitLabel?: string
-  /** Called after the verdict is stored — the wizard uses it to move on. */
-  onSaved?: () => void
+  /** Called after the verdict is stored, with the corrections it carried — the wizard prefills the navigation from them. */
+  onSaved?: (corrections: Record<string, FieldCorrection>) => void
 }
 
 const VERDICTS: FeedbackVerdict[] = ['correct', 'partially_correct', 'incorrect']
@@ -120,7 +120,7 @@ export function FeedbackPanel({
     try {
       await submit({ analysisId, verdict, fieldCorrections: corrections, notes }).unwrap()
       setTouched(false)
-      onSaved?.()
+      onSaved?.(corrections)
     } catch {
       // Surfaced from the mutation's own `error`.
     }

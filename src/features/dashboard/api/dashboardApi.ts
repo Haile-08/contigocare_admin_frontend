@@ -22,7 +22,6 @@ const analysisSummarySchema = z.object({
   confianza_global: z.string().nullish(),
   verdict: z.string().nullish(),
   latency_ms: z.number().default(0),
-  hallazgos_criticos: z.number().default(0),
 })
 
 const dashboardSchema = z.object({

@@ -1,7 +1,7 @@
 import { cn } from '@/shared/lib/cn'
 
 /**
- * The ContigoCare mark — the artwork in `public/icon.svg`, inlined.
+ * The karai.health mark — the artwork in `public/icon.svg`, inlined.
  *
  * Inlined rather than referenced as `<img src="/icon.svg">` for two reasons:
  * it costs no request and cannot flash in after the shell paints, and — the

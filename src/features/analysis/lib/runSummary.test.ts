@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { analisisSchema, analyzeResponseSchema } from '../model/types'
-import type { Analisis, AnalysisResult, Severidad } from '../model/types'
-import {
-  buildRunSummary,
-  exportFileName,
-  formatGeneratedAt,
-  formatRunId,
-  urgencyLevel,
-} from './runSummary'
+import type { Analisis, AnalysisResult } from '../model/types'
+import { buildRunSummary, exportFileName, formatGeneratedAt, formatRunId } from './runSummary'
 
 /** Local time, so the assertions hold wherever the suite runs. */
 const RUN_AT = new Date(2026, 4, 22, 13, 12, 10).toISOString()
@@ -30,32 +24,6 @@ function makeMeta(overrides: Partial<AnalysisResult> = {}): AnalysisResult {
   })
 }
 
-function finding(severidad: Severidad) {
-  return { severidad, categoria: 'cobertura', descripcion_es: 'x', description_en: 'x' }
-}
-
-describe('urgencyLevel', () => {
-  it('reports the worst severity present', () => {
-    const analysis = makeAnalysis({
-      hallazgos: [finding('media'), finding('critica'), finding('alta')],
-    })
-    expect(urgencyLevel(analysis)).toBe('CRITICAL')
-  })
-
-  it('is not driven by the order the findings arrive in', () => {
-    expect(urgencyLevel(makeAnalysis({ hallazgos: [finding('critica'), finding('media')] }))).toBe(
-      'CRITICAL',
-    )
-    expect(urgencyLevel(makeAnalysis({ hallazgos: [finding('informativa'), finding('alta')] }))).toBe(
-      'HIGH',
-    )
-  })
-
-  it('calls a run with no findings INFO rather than blank', () => {
-    expect(urgencyLevel(makeAnalysis({ hallazgos: [] }))).toBe('INFO')
-  })
-})
-
 describe('run identifiers', () => {
   it('formats the run id and the generation date', () => {
     expect(formatRunId(RUN_AT)).toBe('20260522_131210')
@@ -70,16 +38,12 @@ describe('run identifiers', () => {
 })
 
 describe('buildRunSummary', () => {
-  it('builds the five identifying rows', () => {
-    const rows = buildRunSummary(
-      makeAnalysis({ hallazgos: [finding('critica')] }),
-      makeMeta(),
-    )
+  it('builds the four identifying rows', () => {
+    const rows = buildRunSummary(makeAnalysis(), makeMeta())
 
     expect(rows.map((row) => [row.key, row.value])).toEqual([
       ['patient', 'PAC-2026-0020'],
       ['insurer', 'GNP'],
-      ['urgency', 'CRITICAL'],
       ['runId', '20260522_131210'],
       ['generatedAt', '2026-05-22 13:12'],
     ])

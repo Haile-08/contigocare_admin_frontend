@@ -8,7 +8,7 @@ import type { LoginChallenge, Session } from './types'
 const session: Session = {
   admin: {
     id: '3f1c2b7e-0000-4000-8000-000000000001',
-    email: 'ops@contigo.care',
+    email: 'ops@karai.health',
     fullName: 'Ana Ruiz',
     mfaEnrolled: true,
     lastLoginAt: null,

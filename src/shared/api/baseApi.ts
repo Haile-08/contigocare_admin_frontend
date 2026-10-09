@@ -13,7 +13,7 @@ import { baseQueryWithAuth } from './baseQuery'
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithAuth,
-  tagTypes: ['Dashboard', 'Analysis'],
+  tagTypes: ['Dashboard', 'Analysis', 'Navigation'],
   // Deliberately short. The cached queries are the dashboard and the policy
   // list, both cheap to refetch and both metadata only; the extract and analyze
   // endpoints are mutations and cache nothing, because a policy document is not

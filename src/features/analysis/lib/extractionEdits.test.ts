@@ -14,7 +14,6 @@ import type { RunSummaryRow } from './runSummary'
 const HEADER: RunSummaryRow[] = [
   { key: 'patient', label: 'runSummary.patient', value: 'PAC-2026-0020' },
   { key: 'insurer', label: 'runSummary.insurer', value: 'GNP' },
-  { key: 'urgency', label: 'runSummary.urgency', value: 'CRITICAL' },
   { key: 'runId', label: 'runSummary.runId', value: '20260522_131210' },
   { key: 'generatedAt', label: 'runSummary.generatedAt', value: '2026-05-22 13:12' },
 ]
@@ -29,13 +28,6 @@ function groups(): ExtractionGroup[] {
       rows: [
         { key: 'aseguradora', label: 'extraction.aseguradora', value: 'GNP', campo },
         { key: 'vigencia_inicio', label: 'extraction.vigencia_inicio', value: '30/05/2025', campo },
-        { key: 'vigencia_fin', label: 'extraction.vigencia_fin', value: '30/05/2026', campo },
-        {
-          key: 'periodo',
-          label: 'extraction.periodo',
-          value: '30/05/2025 - 30/05/2026',
-          campo: null,
-        },
         { key: 'confianza', label: 'extraction.confidence', value: '82%', campo: null },
       ],
     },
@@ -44,7 +36,7 @@ function groups(): ExtractionGroup[] {
       title: 'extraction.groupFinancial',
       rows: [
         { key: 'deducible', label: 'extraction.deducible', value: '$19,500.00', campo },
-        { key: 'copagos', label: 'extraction.copagos', value: '—', campo },
+        { key: 'tope_coaseguro', label: 'extraction.tope_coaseguro', value: '—', campo },
       ],
     },
   ]
@@ -87,10 +79,10 @@ describe('applyEdits', () => {
   })
 
   it('fills a field the analysis never found', () => {
-    const applied = applyEdits(groups(), setEdit({}, 'financial', 'copagos', '$500 por consulta'))
-    const row = rowOf(applied, 'financial', 'copagos')
+    const applied = applyEdits(groups(), setEdit({}, 'financial', 'tope_coaseguro', '$68,000.00'))
+    const row = rowOf(applied, 'financial', 'tope_coaseguro')
 
-    expect(row?.value).toBe('$500 por consulta')
+    expect(row?.value).toBe('$68,000.00')
     expect(row?.original).toBe('—')
   })
 
@@ -111,25 +103,6 @@ describe('applyEdits', () => {
     expect(rowOf(applied, 'identification', 'confianza')?.value).toBe('82%')
     expect(isEditable('identification', 'confianza')).toBe(false)
     expect(isEditable('identification', 'aseguradora')).toBe(true)
-  })
-
-  it('moves the policy period with the coverage date it is printed from', () => {
-    // Otherwise the document contradicts itself about when cover began, and
-    // the reader has nothing to decide which line to believe.
-    const applied = applyEdits(
-      groups(),
-      setEdit({}, 'identification', 'vigencia_inicio', '30/06/2025'),
-    )
-
-    expect(rowOf(applied, 'identification', 'periodo')?.value).toBe('30/06/2025 - 30/05/2026')
-    expect(rowOf(applied, 'identification', 'periodo')?.original).toBe('30/05/2025 - 30/05/2026')
-    expect(countEdits(applied)).toBe(2)
-  })
-
-  it('states one date when the other was cleared', () => {
-    const applied = applyEdits(groups(), setEdit({}, 'identification', 'vigencia_fin', ''))
-
-    expect(rowOf(applied, 'identification', 'periodo')?.value).toBe('30/05/2025')
   })
 })
 

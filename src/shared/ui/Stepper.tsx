@@ -23,6 +23,9 @@ export interface Step {
  *
  * The completed marker is a check rather than the step number: at a glance the
  * difference between "step 2" and "step 2 is done" should not require reading.
+ *
+ * Each marker carries its step's label for assistive technology, since the
+ * visible label of an inactive step is hidden on narrow screens.
  */
 export function Stepper({
   steps,
@@ -73,9 +76,13 @@ export function Stepper({
                 )}
               >
                 {done ? <Icon name="check" className="size-3" strokeWidth={2.2} /> : index + 1}
+                {active ? null : <span className="sr-only sm:hidden">{step.label}</span>}
               </span>
 
-              <span className="flex min-w-0 flex-col">
+              {/* Below `sm` only the step in progress keeps its label: four
+                  labels do not fit a phone, and the markers still show where
+                  the operator is. */}
+              <span className={cn('min-w-0 flex-col', active ? 'flex' : 'hidden sm:flex')}>
                 <span
                   className={cn(
                     'truncate text-[12px] leading-tight transition-colors duration-200',

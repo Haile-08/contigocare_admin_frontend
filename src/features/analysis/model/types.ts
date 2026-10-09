@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { navigationResponseSchema } from './navigation'
+
 /**
  * The analysis wire contract.
  *
@@ -11,10 +13,8 @@ import { z } from 'zod'
  */
 
 export const confianzaSchema = z.enum(['alta', 'media', 'baja', 'no_encontrado'])
-export const severidadSchema = z.enum(['critica', 'alta', 'media', 'informativa'])
 
 export type Confianza = z.infer<typeof confianzaSchema>
-export type Severidad = z.infer<typeof severidadSchema>
 
 export const campoSchema = z.object({
   valor: z.string().nullish(),
@@ -25,73 +25,29 @@ export const campoSchema = z.object({
 
 export type Campo = z.infer<typeof campoSchema>
 
-export const beneficioSchema = z.object({
-  nombre: z.string(),
-  incluido: z.boolean().nullish(),
-  suma_asegurada: z.string().nullish(),
-  condiciones: z.string().nullish(),
-  evidencia: z.string().nullish(),
-  confianza: confianzaSchema.default('media'),
-})
-
-export const sublimiteSchema = z.object({
-  concepto: z.string(),
-  limite: z.string(),
-  base: z.string().nullish(),
-  evidencia: z.string().nullish(),
-  confianza: confianzaSchema.default('media'),
-})
-
-export const periodoEsperaSchema = z.object({
-  concepto: z.string(),
-  periodo: z.string(),
-  evidencia: z.string().nullish(),
-})
-
-export const exclusionSchema = z.object({
-  descripcion: z.string(),
-  categoria: z.string().nullish(),
-  evidencia: z.string().nullish(),
-})
-
-export const hallazgoSchema = z.object({
-  severidad: severidadSchema,
-  categoria: z.string(),
-  descripcion_es: z.string(),
-  description_en: z.string(),
-  evidencia: z.string().nullish(),
-})
-
+/**
+ * The analysis: the six values the navigation intake is prefilled from, and a
+ * summary. The navigator's own parser reads everything else from the redacted
+ * policy, so the analysis no longer extracts it.
+ *
+ * Unknown keys are dropped rather than refused: a run stored under the wider v2
+ * schema still opens, showing the fields this console still reads.
+ */
 export const analisisSchema = z.object({
-  // The seven sections the extraction report is built from. Every one is
-  // defaulted rather than required: a run stored under the v1 or v2 schema has
-  // none of them under these names, and it still has to open. `rowsFor` renders
-  // an empty section as an absent group rather than as a column of dashes, so
-  // an old run reads as "not asked" instead of "the policy is silent".
+  // Defaulted rather than required: a run stored under the v1 schema has none of
+  // them under these names, and it still has to open. `rowsFor` renders an empty
+  // section as an absent group rather than as a column of dashes, so an old run
+  // reads as "not asked" instead of "the policy is silent".
   identificacion: z.record(z.string(), campoSchema).default({}),
   estructura_financiera: z.record(z.string(), campoSchema).default({}),
-  alcance_cobertura: z.record(z.string(), campoSchema).default({}),
-  exclusiones_limitaciones: z.record(z.string(), campoSchema).default({}),
   preexistencias_continuidad: z.record(z.string(), campoSchema).default({}),
-  proceso_siniestros: z.record(z.string(), campoSchema).default({}),
-  mecanismos_disputa: z.record(z.string(), campoSchema).default({}),
-  sublimites: z.array(sublimiteSchema).default([]),
-  beneficios: z.array(beneficioSchema).default([]),
-  periodos_espera: z.array(periodoEsperaSchema).default([]),
-  exclusiones: z.array(exclusionSchema).default([]),
-  preexistencias: z.string().nullish(),
-  clausulas_especiales: z.array(z.string()).default([]),
-  hallazgos: z.array(hallazgoSchema).default([]),
   resumen_es: z.string().default(''),
   summary_en: z.string().default(''),
-  campos_no_encontrados: z.array(z.string()).default([]),
   confianza_global: confianzaSchema.default('media'),
   notas_calidad_documento: z.string().nullish(),
 })
 
 export type Analisis = z.infer<typeof analisisSchema>
-export type Hallazgo = z.infer<typeof hallazgoSchema>
-export type Beneficio = z.infer<typeof beneficioSchema>
 
 /** One proposed or approved redaction. */
 export const spanSchema = z.object({
@@ -173,6 +129,8 @@ export const analysisDetailSchema = analyzeResponseSchema.extend({
    * offers a coherent — if conservative — sentence.
    */
   patient_analysis_count: z.number().default(1),
+  /** The most recent navigation built on this analysis, when there is one. */
+  navigation: navigationResponseSchema.nullish(),
 })
 
 export type AnalysisDetail = z.infer<typeof analysisDetailSchema>
@@ -183,6 +141,8 @@ export const deletionResponseSchema = z.object({
   patient_id: z.string(),
   deleted_analyses: z.number().default(0),
   deleted_feedback: z.number().default(0),
+  /** Navigations built on the erased analyses — they held the clinical intake. */
+  deleted_navigations: z.number().default(0),
 })
 
 export type DeletionReceipt = z.infer<typeof deletionResponseSchema>
@@ -206,7 +166,6 @@ export const analysisRowSchema = z.object({
   confianza_global: z.string().nullish(),
   verdict: z.string().nullish(),
   latency_ms: z.number().default(0),
-  hallazgos_criticos: z.number().default(0),
 })
 
 export type AnalysisRow = z.infer<typeof analysisRowSchema>
@@ -224,6 +183,15 @@ export interface AnalysisListQuery {
   limit?: number
   offset?: number
   patientId?: string
+}
+
+/** The upload, plus what the operator already knows identifies the patient.
+ *  InnovaDerm's `--names` / `--policy-number`: every occurrence is proposed for
+ *  removal, labelled or not. Used for one scan and never stored. */
+export interface ExtractRequest {
+  file: File
+  names: string
+  policyNumbers: string
 }
 
 export interface AnalyzeRequest {
@@ -247,106 +215,12 @@ export interface FeedbackRequest {
 }
 
 /** Display order for each `Campo` section, so the UI is not at the mercy of
- *  JSON key order. Anything the backend adds later still renders — it just
- *  renders after these. */
-export const IDENTIFICACION_FIELD_ORDER = [
-  'aseguradora',
-  'nombre_plan',
-  'nivel_plan',
-  'numero_poliza',
-  'tipo_poliza',
-  'contratante',
-  'asegurado_titular',
-  'numero_dependientes',
-  'vigencia_inicio',
-  'vigencia_fin',
-  'fecha_renovacion',
-  'moneda',
-  'codigo_agente',
-  'registro_cnsf',
-] as const
+ *  JSON key order. */
+export const IDENTIFICACION_FIELD_ORDER = ['aseguradora', 'vigencia_inicio'] as const
 
-export const FINANCIERA_FIELD_ORDER = [
-  'suma_asegurada',
-  'deducible',
-  'tipo_deducible',
-  'coaseguro_porcentaje',
-  'tope_coaseguro',
-  'copagos',
-  'prima_total',
-  'prima_neta',
-  'recargos_derechos',
-  'forma_pago',
-  'tabulador_aplicable',
-  'tope_honorarios_medicos',
-  'tope_medicamentos',
-  'tope_enfermeria',
-  'tope_por_padecimiento',
-] as const
+export const FINANCIERA_FIELD_ORDER = ['deducible', 'coaseguro_porcentaje', 'tope_coaseguro'] as const
 
-export const COBERTURA_FIELD_ORDER = [
-  'hospitalizacion_cubierta',
-  'ambulatorio_cubierto',
-  'medicamentos_cubiertos',
-  'maternidad_cubierta',
-  'emergencias_cubiertas',
-  'dental_vision_cubierto',
-  'biologicos_cubiertos',
-  'medicamentos_especialidad_cubiertos',
-  'pago_directo_disponible',
-  'pago_directo_medicamentos',
-  'coaseguro_medicamentos_ambulatorio',
-  'modelo_red',
-  'red_hospitalaria',
-  'nivel_hospitalario',
-  'zona_cobertura',
-  'cobertura_eua',
-  'terminos_cobertura_extranjero',
-] as const
-
-export const EXCLUSIONES_FIELD_ORDER = [
-  'edad_maxima_admision',
-  'edad_maxima_permanencia',
-  'congenitos_excluidos',
-  'productos_dermatologicos_excluidos',
-  'biologicos_excluidos',
-  'cosmeticos_excluidos',
-  'exclusiones_especificas_asegurado',
-] as const
-
-export const PREEXISTENCIA_FIELD_ORDER = [
-  'preexistencias_excluidas',
-  'via_cobertura',
-  'cobertura_despues_de_meses',
-  'rider_opcional_disponible',
-  'regla_30_dias',
-  'antiguedad',
-  'portabilidad_antiguedad',
-] as const
-
-export const SINIESTROS_FIELD_ORDER = [
-  'plazo_aviso_siniestro_dias',
-  'tipo_dias_aviso',
-  'metodo_notificacion',
-  'formatos_requeridos',
-  'plazo_liquidacion_dias',
-  'via_reembolso',
-  'via_programacion',
-  'preautorizacion_alto_costo',
-] as const
-
-export const DISPUTA_FIELD_ORDER = [
-  'une_disponible',
-  'une_suspende_prescripcion',
-  'condusef_disponible',
-  'clausula_arbitraje',
-  'plazo_prescripcion',
-  'suspension_prescripcion',
-  'clausula_renovacion',
-  'garantia_renovacion_vitalicia',
-  'agravacion_riesgo',
-  'proceso_cancelacion',
-] as const
+export const PREEXISTENCIA_FIELD_ORDER = ['antiguedad'] as const
 
 /**
  * Every `Campo` section, with the order its fields are read in.
@@ -359,9 +233,5 @@ export const DISPUTA_FIELD_ORDER = [
 export const CAMPO_SECTIONS = [
   ['identificacion', IDENTIFICACION_FIELD_ORDER],
   ['estructura_financiera', FINANCIERA_FIELD_ORDER],
-  ['alcance_cobertura', COBERTURA_FIELD_ORDER],
-  ['exclusiones_limitaciones', EXCLUSIONES_FIELD_ORDER],
   ['preexistencias_continuidad', PREEXISTENCIA_FIELD_ORDER],
-  ['proceso_siniestros', SINIESTROS_FIELD_ORDER],
-  ['mecanismos_disputa', DISPUTA_FIELD_ORDER],
 ] as const satisfies ReadonlyArray<readonly [keyof Analisis, readonly string[]]>

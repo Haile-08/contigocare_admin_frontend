@@ -1,6 +1,15 @@
 import { baseApi } from '@/shared/api/baseApi'
 
 import type {
+  DownloadedFile,
+  DownloadNavigationFileRequest,
+  DrugCatalog,
+  NavigationRun,
+  RunNavigationRequest,
+  SubmitNavigationFeedbackRequest,
+} from '../model/navigation'
+import { drugCatalogSchema, navigationResponseSchema } from '../model/navigation'
+import type {
   AnalysisDetail,
   AnalysisList,
   AnalysisListQuery,
@@ -9,6 +18,7 @@ import type {
   DeleteAnalysisRequest,
   DeletionReceipt,
   ExtractedDocument,
+  ExtractRequest,
   FeedbackRequest,
 } from '../model/types'
 import {
@@ -77,10 +87,14 @@ export const analysisApi = baseApi.injectEndpoints({
       keepUnusedDataFor: 0,
     }),
 
-    extractDocument: builder.mutation<ExtractedDocument, File>({
-      query: (file) => {
+    extractDocument: builder.mutation<ExtractedDocument, ExtractRequest>({
+      query: ({ file, names, policyNumbers }) => {
         const body = new FormData()
         body.append('file', file)
+        // Sent with the upload so the scan proposes every occurrence; the
+        // server does not keep them.
+        if (names.trim()) body.append('names', names.trim())
+        if (policyNumbers.trim()) body.append('policy_numbers', policyNumbers.trim())
         return {
           url: '/insurance/extract',
           method: 'POST',
@@ -130,6 +144,66 @@ export const analysisApi = baseApi.injectEndpoints({
         { type: 'Dashboard', id: 'OVERVIEW' },
         { type: 'Analysis', id: 'LIST' },
       ],
+    }),
+
+    getDrugCatalog: builder.query<DrugCatalog, void>({
+      query: () => ({ url: '/insurance/navigator/catalog' }),
+      transformResponse: (response: unknown) => drugCatalogSchema.parse(response),
+    }),
+
+    runNavigation: builder.mutation<NavigationRun, RunNavigationRequest>({
+      query: ({ analysisId, intake }) => ({
+        url: `/insurance/analyses/${encodeURIComponent(analysisId)}/navigation`,
+        method: 'POST',
+        body: intake,
+      }),
+      // The server answers at once with a `running` run and works in the
+      // background; a transport retry would start and store a second one.
+      extraOptions: { maxRetries: 0 },
+      transformResponse: (response: unknown) => navigationResponseSchema.parse(response),
+    }),
+
+    getNavigation: builder.query<NavigationRun, string>({
+      query: (navigationId) => ({ url: `/insurance/navigations/${encodeURIComponent(navigationId)}` }),
+      transformResponse: (response: unknown) => navigationResponseSchema.parse(response),
+      providesTags: (_result, _error, navigationId) => [{ type: 'Navigation', id: navigationId }],
+      // Polled while the pipeline runs, and the result carries the case: no
+      // reason to keep it once the screen is gone.
+      keepUnusedDataFor: 0,
+    }),
+
+    submitNavigationFeedback: builder.mutation<void, SubmitNavigationFeedbackRequest>({
+      query: ({ navigationId, verdict, sections, notes }) => ({
+        url: `/insurance/navigations/${encodeURIComponent(navigationId)}/feedback`,
+        method: 'POST',
+        body: { verdict, sections, notes },
+      }),
+      // The verdict is shown on the navigation itself, and on the analysis
+      // detail that carries its latest navigation.
+      invalidatesTags: (_result, _error, { navigationId, analysisId }) => [
+        { type: 'Navigation', id: navigationId },
+        { type: 'Analysis', id: analysisId },
+      ],
+    }),
+
+    /**
+     * The coordinator report or the broker kit, built by the server in memory.
+     *
+     * Kept out of the cache as bytes: the response becomes an object URL the
+     * component clicks and revokes, so only a string is ever stored.
+     */
+    downloadNavigationFile: builder.mutation<DownloadedFile, DownloadNavigationFileRequest>({
+      query: ({ navigationId, kind }) => ({
+        url: `/insurance/navigations/${encodeURIComponent(navigationId)}/${kind}`,
+        responseHandler: async (response: Response) => {
+          if (!response.ok) return response.json()
+          const disposition = response.headers.get('Content-Disposition') ?? ''
+          const filename = /filename="([^"]+)"/.exec(disposition)?.[1] ?? ''
+          return { url: URL.createObjectURL(await response.blob()), filename }
+        },
+        timeout: SLOW_REQUEST_TIMEOUT_MS,
+      }),
+      extraOptions: { maxRetries: 0 },
     }),
 
     submitFeedback: builder.mutation<void, FeedbackRequest>({
@@ -183,4 +257,9 @@ export const {
   useAnalyzePolicyMutation,
   useSubmitFeedbackMutation,
   useDeleteAnalysisMutation,
+  useGetDrugCatalogQuery,
+  useRunNavigationMutation,
+  useGetNavigationQuery,
+  useDownloadNavigationFileMutation,
+  useSubmitNavigationFeedbackMutation,
 } = analysisApi

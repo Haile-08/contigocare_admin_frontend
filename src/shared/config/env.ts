@@ -36,7 +36,7 @@ const envSchema = z.object({
 
 const parsed = envSchema.safeParse({
   apiBaseUrl: import.meta.env.VITE_API_BASE_URL ?? '/api/v1',
-  appName: import.meta.env.VITE_APP_NAME ?? 'ContigoCare Admin',
+  appName: import.meta.env.VITE_APP_NAME ?? 'karai.health Admin',
   // DevTools expose the whole store (including tokens) to any page extension.
   enableDevtools: import.meta.env.VITE_ENABLE_DEVTOOLS ?? (isProduction ? 'false' : 'true'),
   requestTimeoutMs: import.meta.env.VITE_REQUEST_TIMEOUT_MS ?? '30000',

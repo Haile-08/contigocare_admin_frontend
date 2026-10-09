@@ -57,6 +57,8 @@ describe('DeleteAnalysisDialog', () => {
         patient_id: 'PAC-2026-0020',
         deleted_analyses: 1,
         deleted_feedback: 1,
+        // Defaulted by the schema when the server predates navigations.
+        deleted_navigations: 0,
       })
     })
 

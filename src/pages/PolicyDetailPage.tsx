@@ -4,9 +4,11 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Page, PageHeader } from '@/app/layouts/Page'
 import { paths } from '@/app/router/paths'
 import { useGetAnalysisQuery } from '@/features/analysis/api/analysisApi'
+import { applyCorrections } from '@/features/analysis/lib/navigationIntake'
 import { AnalysisView } from '@/features/analysis/ui/AnalysisView'
 import { DeleteAnalysisDialog } from '@/features/analysis/ui/DeleteAnalysisDialog'
 import { FeedbackPanel } from '@/features/analysis/ui/FeedbackPanel'
+import { NavigationPanel } from '@/features/analysis/ui/NavigationPanel'
 import { useTranslation } from '@/shared/i18n'
 import type { TranslationKey } from '@/shared/i18n'
 import { cn } from '@/shared/lib/cn'
@@ -18,7 +20,13 @@ import { ErrorState } from '@/shared/ui/ErrorState'
 import { Icon } from '@/shared/ui/Icon'
 import { Skeleton } from '@/shared/ui/Skeleton'
 
-type Tab = 'analysis' | 'policy'
+type Tab = 'analysis' | 'navigation' | 'policy'
+
+const TAB_LABEL: Record<Tab, TranslationKey> = {
+  analysis: 'policyDetail.tabAnalysis',
+  navigation: 'policyDetail.tabNavigation',
+  policy: 'policyDetail.tabPolicy',
+}
 
 const STATUS_LABEL: Record<string, TranslationKey> = {
   succeeded: 'status.succeeded',
@@ -140,7 +148,7 @@ export function PolicyDetailPage() {
             came from belong beside each other, and a tab keeps the long
             document out of the way until someone wants to check a quote. */}
         <div className="flex items-center gap-1 border-b border-line">
-          {(['analysis', 'policy'] as const).map((option) => (
+          {(['analysis', 'navigation', 'policy'] as const).map((option) => (
             <button
               key={option}
               type="button"
@@ -153,7 +161,7 @@ export function PolicyDetailPage() {
                   : 'border-transparent text-muted hover:text-body',
               )}
             >
-              {option === 'analysis' ? t('policyDetail.tabAnalysis') : t('policyDetail.tabPolicy')}
+              {t(TAB_LABEL[option])}
             </button>
           ))}
         </div>
@@ -172,6 +180,23 @@ export function PolicyDetailPage() {
                 existing={data.feedback}
               />
             </>
+          ) : (
+            <Card>
+              <div className="p-4">
+                <Alert tone="warning">{t('policyDetail.noResult')}</Alert>
+              </div>
+            </Card>
+          )
+        ) : tab === 'navigation' ? (
+          data.result ? (
+            // Keyed on the navigation so a new run from elsewhere remounts the
+            // panel with it instead of keeping the previous report on screen.
+            <NavigationPanel
+              key={`${data.analysis_id}-${data.navigation?.navigation_id ?? 'none'}`}
+              analysisId={data.analysis_id}
+              analysis={applyCorrections(data.result, data.feedback?.field_corrections)}
+              existing={data.navigation}
+            />
           ) : (
             <Card>
               <div className="p-4">

@@ -1,6 +1,6 @@
-# ContigoCare Admin — Frontend
+# karai.health Admin — Frontend
 
-React 19 + TypeScript + Vite SPA for the ContigoCare admin API. State is managed
+React 19 + TypeScript + Vite SPA for the karai.health admin API. State is managed
 with **Redux Toolkit**; **RTK Query** is the only way the app talks to the
 network.
 

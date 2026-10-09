@@ -49,7 +49,7 @@ export function AuthLayout() {
       <aside className="hidden flex-[0_0_54%] flex-col justify-between gap-12 border-r border-line bg-canvas px-12 py-14 lg:flex">
         <div className="flex items-center gap-3">
           <BrandMark className="h-9" />
-          <span className="text-[17px] font-medium tracking-[-0.015em]">ContigoCare</span>
+          <span className="text-[17px] font-medium tracking-[-0.015em]">karai.health</span>
         </div>
 
         <div className="flex max-w-140 flex-col gap-8.5">
@@ -116,7 +116,7 @@ export function AuthLayout() {
         <div className="flex w-full max-w-89 flex-col gap-6.5">
           <div className="flex items-center gap-2.5 lg:hidden">
             <BrandMark className="h-8" />
-            <span className="text-[15px] font-medium tracking-[-0.01em]">ContigoCare</span>
+            <span className="text-[15px] font-medium tracking-[-0.01em]">karai.health</span>
           </div>
           <Outlet />
         </div>

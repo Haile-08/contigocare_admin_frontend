@@ -4,8 +4,6 @@ import { useTranslation } from '@/shared/i18n'
 import type { TranslationKey } from '@/shared/i18n'
 import { cn } from '@/shared/lib/cn'
 import { logger } from '@/shared/lib/logger'
-import { Badge } from '@/shared/ui/Badge'
-import type { BadgeTone } from '@/shared/ui/Badge'
 import { Button } from '@/shared/ui/Button'
 import { Card, CardHeader } from '@/shared/ui/Card'
 import { Input } from '@/shared/ui/Field'
@@ -25,15 +23,7 @@ import { buildExtractionPdf } from '../lib/extractionPdf'
 import { buildPolicyExtraction } from '../lib/policyExtraction'
 import type { ExtractionRow } from '../lib/policyExtraction'
 import { PLACEHOLDER, buildRunSummary, exportFileName } from '../lib/runSummary'
-import type { UrgencyLevel } from '../lib/runSummary'
 import type { Analisis, AnalysisResult, Confianza } from '../model/types'
-
-const URGENCY_TONE: Record<UrgencyLevel, BadgeTone> = {
-  CRITICAL: 'critical',
-  HIGH: 'warning',
-  MEDIUM: 'neutral',
-  INFO: 'info',
-}
 
 const CONFIDENCE_LABEL: Record<Confianza, TranslationKey> = {
   alta: 'confidence.alta',
@@ -132,7 +122,7 @@ function ExtractionFieldRow({ groupKey, row, editing, draft, onEdit, onRevert }:
               {missing ? t('analysis.notFound') : row.value}
             </span>
 
-            {/* Derived rows — the extraction score, the policy period — have no
+            {/* Derived rows — the extraction score, the run date — have no
                 confidence of their own, and a dot next to them would imply the
                 agent asserted something it did not. The placeholder keeps the
                 value column aligned with the rows that do have one.
@@ -204,13 +194,13 @@ function ExtractionFieldRow({ groupKey, row, editing, draft, onEdit, onRevert }:
 }
 
 /**
- * Section 2 of the coverage report: the policy extraction.
+ * The policy extraction: the values the navigation starts from.
  *
- * This is the factual backbone of everything else on the screen. The alerts,
- * the deadlines and the plan are all interpretation of these terms, so they are
- * stated first, grouped the way the report groups them, with the run's identity
- * above them — insurer, patient, urgency, run id — because the table travels
- * and a policy term detached from the policy it came from is unusable.
+ * The navigator's deadlines, projections and plan are all computed from these
+ * terms once a coordinator confirms them in the intake, so they are stated here
+ * first, with the run's identity above them — insurer, patient, run id —
+ * because the table travels and a policy term detached from the policy it came
+ * from is unusable.
  *
  * Both readings of the same rows are here: the reviewer's, who opens the quote
  * behind a value and confirms it against the document, and the broker's, who
@@ -239,7 +229,6 @@ export function PolicyExtractionCard({
 
   const groups = applyEdits(buildPolicyExtraction(analysis, meta), edits)
   const header = applyHeaderEdits(buildRunSummary(analysis, meta), edits)
-  const urgency = header.find((row) => row.key === 'urgency')?.value as UrgencyLevel | undefined
   const edited = countEdits(groups)
 
   const handleDownload = (): void => {
@@ -274,7 +263,6 @@ export function PolicyExtractionCard({
         description={t('extraction.description')}
         action={
           <div className="flex items-center gap-2">
-            {urgency ? <Badge tone={URGENCY_TONE[urgency]}>{urgency}</Badge> : null}
             <Button
               variant={editing ? 'primary' : 'secondary'}
               size="sm"
@@ -319,10 +307,9 @@ export function PolicyExtractionCard({
       <div className="grid grid-cols-1 gap-x-8 px-4.5 pb-4 xl:grid-cols-2">
         {groups.map((group) =>
           // A section a run stored under an older schema never carried is left
-          // out entirely. A column of dashes under "Exclusiones y limitaciones"
-          // would read as a policy that names no exclusions, which is a
-          // different — and far more actionable — claim than "this run predates
-          // the question".
+          // out entirely. A column of dashes under "Preexistencias" would read
+          // as a policy that states no antigüedad, which is a different — and
+          // far more actionable — claim than "this run predates the question".
           group.rows.length === 0 ? null : (
             <section key={group.key}>
               <h4 className="border-b border-line-strong pt-2.5 pb-1.5 text-[10.5px] font-medium tracking-wide text-faint uppercase">
@@ -334,9 +321,8 @@ export function PolicyExtractionCard({
                     key={row.key}
                     groupKey={group.key}
                     row={row}
-                    // A derived row stays read-only even in edit mode: the
-                    // period follows the two dates above it, and the score and
-                    // the run date are the console's own claims about itself.
+                    // A derived row stays read-only even in edit mode: the score
+                    // and the run date are the console's own claims about itself.
                     editing={editing && isEditable(group.key, row.key)}
                     draft={edits[editKey(group.key, row.key)]}
                     onEdit={(value) =>

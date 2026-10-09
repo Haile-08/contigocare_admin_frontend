@@ -17,7 +17,6 @@ function prose(bytes: Uint8Array): string {
 const HEADER: RunSummaryRow[] = [
   { key: 'patient', label: 'runSummary.patient', value: 'PAC-2026-0020' },
   { key: 'insurer', label: 'runSummary.insurer', value: 'Grupo Nacional Provincial' },
-  { key: 'urgency', label: 'runSummary.urgency', value: 'CRITICAL' },
   { key: 'runId', label: 'runSummary.runId', value: '20260522_131210' },
   { key: 'generatedAt', label: 'runSummary.generatedAt', value: '2026-05-22 13:12' },
 ]
@@ -28,7 +27,7 @@ const GROUPS: ExtractionGroup[] = [
     title: 'extraction.groupIdentification',
     rows: [
       { key: 'aseguradora', label: 'extraction.aseguradora', value: 'GNP', campo: null },
-      { key: 'tipo_poliza', label: 'extraction.tipo_poliza', value: '—', campo: null },
+      { key: 'vigencia_inicio', label: 'extraction.vigencia_inicio', value: '—', campo: null },
     ],
   },
   {
@@ -38,7 +37,7 @@ const GROUPS: ExtractionGroup[] = [
   },
   // A section a run stored under an older schema never carried. It must not
   // print a heading.
-  { key: 'disputes', title: 'extraction.groupDisputes', rows: [] },
+  { key: 'preexisting', title: 'extraction.groupPreexisting', rows: [] },
 ]
 
 describe('balancedSplit', () => {
@@ -89,7 +88,7 @@ describe('buildExtractionPdf', () => {
     const file = render(buildExtractionPdf(GROUPS, HEADER))
 
     expect(file).toContain('(IDENTIFICACI\xd3N Y ADMINISTRATIVO) Tj')
-    expect(file).not.toContain('(DISPUTA Y REGULACI')
+    expect(file).not.toContain('(PREEXISTENCIAS Y CONTINUIDAD)')
   })
 
   it('marks a corrected value rather than passing it off as extracted', () => {

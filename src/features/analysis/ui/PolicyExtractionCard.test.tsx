@@ -14,31 +14,16 @@ const found = (valor: string) => ({ valor, confianza: 'alta', evidencia: `cita: 
 const analysis = analisisSchema.parse({
   identificacion: {
     aseguradora: found('GNP'),
-    tipo_poliza: found('Colectivo'),
-    moneda: found('MXN'),
     vigencia_inicio: found('30/05/2025'),
-    vigencia_fin: found('30/05/2026'),
-    registro_cnsf: found('CNSF-S0025-0123-2019'),
   },
   estructura_financiera: {
     deducible: found('$19,500.00'),
-    tipo_deducible: found('Única por padecimiento'),
     coaseguro_porcentaje: found('10%'),
     tope_coaseguro: found('$68,000.00'),
-    suma_asegurada: found('$2,120,000.00'),
-    tope_honorarios_medicos: found('$210,000.00'),
   },
-  alcance_cobertura: {
-    biologicos_cubiertos: { valor: null, confianza: 'no_encontrado' },
-    modelo_red: found('Red obligatoria'),
+  preexistencias_continuidad: {
+    antiguedad: { valor: null, confianza: 'no_encontrado' },
   },
-  exclusiones_limitaciones: { productos_dermatologicos_excluidos: found('Sí') },
-  preexistencias_continuidad: { preexistencias_excluidas: found('Sí') },
-  proceso_siniestros: { plazo_aviso_siniestro_dias: found('5') },
-  mecanismos_disputa: { clausula_renovacion: found('Renovación anual') },
-  hallazgos: [
-    { severidad: 'critica', categoria: 'cobertura', descripcion_es: 'x', description_en: 'x' },
-  ],
 })
 
 const meta = analyzeResponseSchema.parse({
@@ -59,45 +44,38 @@ afterEach(() => {
 })
 
 describe('PolicyExtractionCard', () => {
-  it('states the extracted terms, grouped as the report prints them', () => {
+  it('states the values the navigation starts from, in three groups', () => {
     renderCard()
 
     for (const heading of [
       'Identificación y administrativo',
       'Estructura financiera',
-      'Alcance de la cobertura',
-      'Exclusiones y limitaciones',
       'Preexistencias y continuidad',
-      'Proceso de siniestros',
-      'Disputa y regulación',
     ]) {
       expect(screen.getByText(heading)).toBeInTheDocument()
     }
+    expect(screen.queryByText('Alcance de la cobertura')).not.toBeInTheDocument()
 
+    expect(screen.getByText('GNP')).toBeInTheDocument()
+    expect(screen.getByText('30/05/2025')).toBeInTheDocument()
     expect(screen.getByText('$19,500.00')).toBeInTheDocument()
-    expect(screen.getByText('Única por padecimiento')).toBeInTheDocument()
+    expect(screen.getByText('10%')).toBeInTheDocument()
     expect(screen.getByText('$68,000.00')).toBeInTheDocument()
-    expect(screen.getByText('30/05/2025 - 30/05/2026')).toBeInTheDocument()
-  })
-
-  it('carries the run’s urgency, so a forwarded table is not anonymous', () => {
-    renderCard()
-    expect(screen.getByText('CRITICAL')).toBeInTheDocument()
   })
 
   it('says a field was not found rather than showing an empty cell', () => {
     renderCard()
 
-    const row = screen.getByText('Biológicos cubiertos').closest('div')
+    const row = screen.getByText('Antigüedad').closest('div')
     expect(within(row as HTMLElement).getByText('No encontrado')).toBeInTheDocument()
   })
 
   it('shows a derived row as a value, not as a field the agent failed to find', () => {
     renderCard()
 
-    // The policy period and the extraction score have no `Campo` behind them.
-    // Reading "no field" as "not found" would report a gap that is not there.
-    const row = screen.getByText('Periodo de póliza').closest('div')
+    // The extraction score has no `Campo` behind it. Reading "no field" as
+    // "not found" would report a gap that is not there.
+    const row = screen.getByText('Confianza de extracción').closest('div')
     expect(within(row as HTMLElement).queryByText('No encontrado')).not.toBeInTheDocument()
   })
 

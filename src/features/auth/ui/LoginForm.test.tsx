@@ -39,7 +39,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup()
     const { store } = renderWithProviders(<LoginForm />, { preloadedState: { ui: englishUi } })
 
-    await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
+    await user.type(screen.getByLabelText('Email'), 'ops@karai.health')
     await user.type(screen.getByLabelText('Password'), 'WrongPass1!')
     await user.click(screen.getByRole('button', { name: 'Continue' }))
 
@@ -72,7 +72,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup()
     const { store } = renderWithProviders(<LoginForm />, { preloadedState: { ui: englishUi } })
 
-    await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
+    await user.type(screen.getByLabelText('Email'), 'ops@karai.health')
     await user.type(screen.getByLabelText('Password'), 'Secret123!')
     await user.click(screen.getByRole('button', { name: 'Continue' }))
 
@@ -97,7 +97,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup()
     const { store } = renderWithProviders(<LoginForm />, { preloadedState: { ui: englishUi } })
 
-    await user.type(screen.getByLabelText('Email'), 'ops@contigo.care')
+    await user.type(screen.getByLabelText('Email'), 'ops@karai.health')
     await user.type(screen.getByLabelText('Password'), 'Secret123!')
     await user.click(screen.getByRole('button', { name: 'Continue' }))
 
@@ -127,7 +127,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup()
     renderWithProviders(<LoginForm />)
 
-    await user.type(screen.getByLabelText('Correo electrónico'), 'ops@contigo.care')
+    await user.type(screen.getByLabelText('Correo electrónico'), 'ops@karai.health')
     await user.type(screen.getByLabelText('Contraseña'), 'Secreto123!')
     await user.click(screen.getByRole('button', { name: 'Continuar' }))
 

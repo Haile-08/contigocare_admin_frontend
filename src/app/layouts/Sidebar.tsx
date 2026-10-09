@@ -45,7 +45,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <BrandMark className="h-7" {...(collapsed ? { label: env.appName } : {})} />
           {collapsed ? null : (
             <span className="truncate text-[13.5px] font-medium tracking-[-0.01em]">
-              ContigoCare
+              karai.health
             </span>
           )}
         </div>

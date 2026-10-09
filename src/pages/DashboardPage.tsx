@@ -186,13 +186,6 @@ export function DashboardPage() {
                           <span className="truncate text-[12.5px] font-medium text-body">
                             {run.aseguradora ?? t('dashboard.unknownInsurer')}
                           </span>
-                          {run.hallazgos_criticos > 0 ? (
-                            <Badge tone="critical">
-                              {t('dashboard.criticalFindings', {
-                                count: String(run.hallazgos_criticos),
-                              })}
-                            </Badge>
-                          ) : null}
                         </div>
                         <span className="truncate text-[11px] text-faint">
                           {t('dashboard.patientLabel', { id: run.patient_id })} ·{' '}
